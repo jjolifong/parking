@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>무양공원 현장조사 v7</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root{--blue:#1a56db;--blue-lt:#e8f0fe;--green:#059669;--green-lt:#d1fae5;--red:#dc2626;--red-lt:#fee2e2;--amber:#d97706;--amber-lt:#fef3c7;--purple:#7c3aed;--purple-lt:#ede9fe;--teal:#0891b2;--teal-lt:#e0f2fe;--gray0:#f9fafb;--gray1:#f3f4f6;--gray2:#e5e7eb;--gray5:#6b7280;--gray7:#374151;--gray9:#111827;--r:12px;--rs:8px;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;font-family:-apple-system,'Apple SD Gothic Neo',sans-serif;color:var(--gray9);font-size:15px;}
+#app{display:flex;flex-direction:column;height:100dvh;max-width:520px;margin:0 auto;background:#fff;overflow:hidden;}
+#header{background:var(--blue);color:#fff;padding:8px 12px;flex-shrink:0;display:flex;align-items:center;gap:6px;}
+#header-text{flex:1;}
+#header h1{font-size:14px;font-weight:700;}
+#header p{font-size:10px;opacity:.8;margin-top:1px;}
+.hbtn{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:7px;padding:5px 8px;font-size:11px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+#gps-badge{font-size:10px;padding:3px 7px;border-radius:20px;background:#1e3a5f;color:#60a5fa;border:1px solid #1d4ed8;white-space:nowrap;flex-shrink:0;}
+#gps-badge.ok{background:#14532d;color:#4ade80;border-color:#16a34a;}
+#gps-badge.calib{background:#713f12;color:#fcd34d;border-color:#d97706;}
+#map{flex:1;min-height:0;}
+#status-banner{flex-shrink:0;padding:5px 12px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px;background:var(--gray0);border-top:1px solid var(--gray2);border-bottom:1px solid var(--gray2);min-height:28px;}
+#banner-dot{width:8px;height:8px;border-radius:50%;background:var(--gray5);flex-shrink:0;}
+#banner-dot.rec{background:#dc2626;animation:blink 1s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+#banner-text{flex:1;color:var(--gray7);}
+#line-section{flex-shrink:0;background:#fff;border-bottom:1px solid var(--gray2);padding:5px 8px;}
+#line-label{font-size:10px;font-weight:600;color:var(--gray5);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;}
+#line-grid{display:flex;gap:5px;}
+.line-btn{flex:1;padding:8px 4px;border-radius:var(--rs);border:2px solid;cursor:pointer;text-align:center;font-size:11px;font-weight:700;line-height:1.3;user-select:none;transition:all .15s;}
+.line-btn:active{transform:scale(.95);}
+.line-btn.rec{animation:lbink .7s infinite;}
+@keyframes lbink{0%,100%{opacity:1}50%{opacity:.4}}
+.lb-w{border-color:#9ca3af;color:#374151;background:#f9fafb;} .lb-w.rec{background:#d1d5db;}
+.lb-y1{border-color:#ca8a04;color:#92400e;background:#fefce8;} .lb-y1.rec{background:#fef08a;}
+.lb-y2{border-color:#b45309;color:#7c2d12;background:#fef3c7;} .lb-y2.rec{background:#fde68a;}
+.lb-ob{border-color:#dc2626;color:#7f1d1d;background:#fef2f2;} .lb-ob.rec{background:#fecaca;}
+.lb-main{border-color:#1d4ed8;color:#1d4ed8;background:#eff6ff;font-size:14px;padding:10px;}
+.lb-main.rec{background:#fecaca;border-color:#dc2626;color:#dc2626;font-weight:800;}
+#counter-section{flex-shrink:0;background:#fff;border-bottom:1px solid var(--gray2);}
+#cnt-label-row{display:flex;align-items:center;justify-content:space-between;padding:4px 10px 2px;}
+#cnt-label{font-size:10px;font-weight:600;color:var(--gray5);text-transform:uppercase;letter-spacing:.04em;}
+#cnt-actions{display:flex;gap:5px;}
+.ca{font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid var(--gray2);background:var(--gray0);cursor:pointer;color:var(--gray7);}
+#counter-grid{display:flex;flex-wrap:wrap;gap:4px;padding:3px 8px 6px;}
+.cnt-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:7px 4px 5px;border-radius:var(--rs);cursor:pointer;user-select:none;min-width:58px;flex:1;position:relative;border:2px solid;transition:transform .1s;}
+.cnt-btn:active{transform:scale(.92);}
+.cnt-icon{font-size:16px;line-height:1;}
+.cnt-lbl{font-size:9px;margin-top:2px;font-weight:600;opacity:.85;text-align:center;}
+.cnt-num{font-size:20px;font-weight:800;line-height:1.1;}
+.cnt-hint{position:absolute;bottom:3px;right:4px;font-size:9px;opacity:.35;}
+.cnt-del{position:absolute;top:2px;left:3px;font-size:9px;opacity:.4;cursor:pointer;}
+.c-car{border-color:#1d4ed8;color:var(--blue);background:var(--blue-lt);}
+.c-large{border-color:#92400e;color:#92400e;background:var(--amber-lt);}
+.c-camp{border-color:#5b21b6;color:#5b21b6;background:var(--purple-lt);}
+.c-obs{border-color:#991b1b;color:#991b1b;background:var(--red-lt);}
+.c-vacant{border-color:#065f46;color:#065f46;background:var(--green-lt);}
+.c-custom{border-color:var(--gray5);color:var(--gray7);background:var(--gray1);}
+#bottom-bar{flex-shrink:0;background:#fff;border-top:1px solid var(--gray2);padding:6px 8px;display:flex;gap:5px;}
+.bb{flex:1;padding:9px 6px;font-size:11px;font-weight:700;border-radius:var(--rs);border:none;cursor:pointer;white-space:nowrap;}
+.bb:active{transform:scale(.97);}
+.bb-calib{background:#fef3c7;color:#92400e;border:1.5px solid #d97706;}
+.bb-calib.done{background:#d1fae5;color:#065f46;border-color:#059669;}
+.bb-blk{background:var(--gray1);color:var(--gray7);}
+.bb-list{background:var(--gray1);color:var(--gray7);}
+.bb-save{background:var(--blue);color:#fff;}
+.pop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:3000;align-items:flex-end;justify-content:center;}
+.pop.open{display:flex;}
+.pbox{background:#fff;border-radius:18px 18px 0 0;padding:20px 18px 30px;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;}
+.ptitle{font-size:16px;font-weight:700;margin-bottom:12px;}
+.pauto{font-size:12px;background:var(--green-lt);color:#065f46;border-radius:8px;padding:8px 12px;margin-bottom:10px;font-weight:600;}
+.pnote{font-size:11px;color:var(--gray5);background:var(--gray0);border-radius:7px;padding:7px 10px;margin-bottom:10px;line-height:1.6;}
+.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.tbtn{padding:13px 8px;border-radius:var(--rs);border:2px solid;cursor:pointer;text-align:center;font-size:13px;font-weight:700;}
+.tbtn:active{transform:scale(.96);}
+.tbtn.sel{border-width:3px;}
+.t-w{border-color:#9ca3af;color:#374151;background:#f9fafb;} .t-w.sel{background:#e5e7eb;}
+.t-y1{border-color:#ca8a04;color:#92400e;background:#fefce8;} .t-y1.sel{background:#fef08a;}
+.t-y2{border-color:#b45309;color:#7c2d12;background:#fef3c7;} .t-y2.sel{background:#fde68a;}
+.t-ob{border-color:#dc2626;color:#7f1d1d;background:#fef2f2;} .t-ob.sel{background:#fecaca;}
+.pf{margin-bottom:10px;}
+.pf label{display:block;font-size:12px;font-weight:600;color:var(--gray7);margin-bottom:3px;}
+.pf input,.pf select{width:100%;padding:9px 11px;font-size:13px;border:1.5px solid var(--gray2);border-radius:var(--rs);background:#fff;-webkit-appearance:none;}
+.pf input:focus,.pf select:focus{outline:none;border-color:var(--blue);}
+.pr2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.ci-box{background:#eff6ff;border:1px solid #93c5fd;border-radius:var(--rs);padding:9px 12px;margin-bottom:10px;}
+.ci-ttl{font-size:12px;font-weight:700;color:var(--blue);margin-bottom:5px;}
+.ci-vals{font-size:12px;color:var(--gray7);line-height:1.8;}
+.ci-btn{margin-top:6px;width:100%;padding:7px;background:var(--blue);color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:3px;}
+.chip{padding:5px 9px;border:1.5px solid var(--gray2);border-radius:20px;font-size:12px;cursor:pointer;user-select:none;color:var(--gray7);}
+.chip.sel{background:var(--blue-lt);border-color:var(--blue);color:var(--blue);font-weight:600;}
+.pbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
+.pb-c{padding:12px;background:var(--gray1);color:var(--gray7);border:none;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;}
+.pb-s{padding:12px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-size:13px;font-weight:700;cursor:pointer;}
+#list-panel{display:none;position:absolute;inset:0;background:#fff;z-index:900;overflow-y:auto;}
+#list-panel.open{display:block;}
+.ph{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--gray2);padding:10px 14px;display:flex;align-items:center;gap:10px;z-index:10;}
+.ph h2{font-size:15px;font-weight:700;flex:1;}
+.pb{padding:12px;}
+.ls-ttl{font-size:11px;font-weight:700;color:var(--gray5);text-transform:uppercase;letter-spacing:.04em;margin:10px 0 6px;}
+.lcard{background:#fff;border:1px solid var(--gray2);border-radius:var(--r);padding:10px 12px;margin-bottom:7px;display:flex;align-items:center;gap:8px;}
+.lcolor{width:20px;height:4px;border-radius:2px;flex-shrink:0;}
+.linfo{flex:1;}
+.lname{font-size:13px;font-weight:600;}
+.ldetail{font-size:11px;color:var(--gray5);margin-top:2px;line-height:1.5;}
+.ldel{font-size:11px;color:var(--red);cursor:pointer;padding:3px 7px;border:1px solid #fecaca;border-radius:5px;flex-shrink:0;}
+.empty{text-align:center;padding:40px 0;color:var(--gray5);font-size:13px;}
+#cdlg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:5000;align-items:center;justify-content:center;padding:20px;}
+#cdlg.open{display:flex;}
+.cbox{background:#fff;border-radius:16px;padding:22px 20px;width:100%;max-width:320px;}
+.cttl{font-size:15px;font-weight:700;margin-bottom:8px;}
+.cmsg{font-size:13px;color:var(--gray5);margin-bottom:18px;line-height:1.6;white-space:pre-wrap;}
+.cbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.cc{padding:11px;background:var(--gray1);border:none;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;}
+.co{padding:11px;color:#fff;border:none;border-radius:var(--rs);font-size:13px;font-weight:700;cursor:pointer;}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="header">
+    <div id="header-text">
+      <h1>무양공원 현장조사 v7</h1>
+      <p id="calib-info">GPS 보정 없음 — [위치 보정] 버튼을 탭하세요</p>
+    </div>
+    <button class="hbtn" onclick="cycleMap()">🗺 일반</button>
+    <div id="gps-badge">GPS 연결중</div>
+  </div>
+  <div id="map"></div>
+  <div id="status-banner">
+    <div id="banner-dot"></div>
+    <div id="banner-text">블록을 먼저 그린 후 조사를 시작하세요</div>
+  </div>
+  <div id="line-section">
+    <div id="line-label">구간 라인</div>
+    <div id="line-grid">
+      <div class="line-btn lb-main" id="lb-main" onclick="toggleLine()">● 구간 기록 시작</div>
+    </div>
+  </div>
+  <div id="counter-section">
+    <div id="cnt-label-row">
+      <span id="cnt-label">카운터 — 탭: +1 / 꾹: -1</span>
+      <div id="cnt-actions">
+        <button class="ca" onclick="openAddCnt()">+ 추가</button>
+        <button class="ca" onclick="resetCntPts()">📍 탭 삭제</button>
+        <button class="ca" onclick="resetCnt()">🔄 초기화</button>
+      </div>
+    </div>
+    <div id="counter-grid">
+      <div class="cnt-btn c-car"    id="cb-car"    onclick="doCnt('car')"    oncontextmenu="undoCnt('car');return false;"><div class="cnt-icon">🚗</div><div class="cnt-lbl">일반차량</div><div class="cnt-num" id="cnt-car">0</div><div class="cnt-hint">꾹=취소</div></div>
+      <div class="cnt-btn c-large"  id="cb-large"  onclick="doCnt('large')"  oncontextmenu="undoCnt('large');return false;"><div class="cnt-icon">🚛</div><div class="cnt-lbl">대형차</div><div class="cnt-num" id="cnt-large">0</div><div class="cnt-hint">꾹=취소</div></div>
+      <div class="cnt-btn c-camp"   id="cb-camp"   onclick="doCnt('camp')"   oncontextmenu="undoCnt('camp');return false;"><div class="cnt-icon">🚐</div><div class="cnt-lbl">캠핑카</div><div class="cnt-num" id="cnt-camp">0</div><div class="cnt-hint">꾹=취소</div></div>
+      <div class="cnt-btn c-obs"    id="cb-obs"    onclick="doCnt('obs')"    oncontextmenu="undoCnt('obs');return false;"><div class="cnt-icon">🚫</div><div class="cnt-lbl">적치물</div><div class="cnt-num" id="cnt-obs">0</div><div class="cnt-hint">꾹=취소</div></div>
+      <div class="cnt-btn c-vacant" id="cb-vacant" onclick="doCnt('vacant')" oncontextmenu="undoCnt('vacant');return false;"><div class="cnt-icon">🟩</div><div class="cnt-lbl">유휴지</div><div class="cnt-num" id="cnt-vacant">0</div><div class="cnt-hint">꾹=취소</div></div>
+    </div>
+  </div>
+  <div id="bottom-bar">
+    <button class="bb bb-calib" id="bb-calib" onclick="calibrate()">📍 위치 보정</button>
+    <button class="bb bb-blk"   onclick="openBlockDraw()">⬜ 블록</button>
+    <button class="bb bb-list"  onclick="openList()">📋 목록</button>
+    <button class="bb bb-save"  onclick="openExport()">💾 저장</button>
+  </div>
+  <div id="list-panel">
+    <div class="ph">
+      <button class="pb-c" style="flex:none;padding:5px 10px;" onclick="closeList()">← 뒤로</button>
+      <h2>저장 목록</h2>
+    </div>
+    <div class="pb" id="list-body"></div>
+  </div>
+</div>
+
+<!-- 블록 그리기 팝업 -->
+<div class="pop" id="pop-block">
+  <div class="pbox">
+    <div class="ptitle">⬜ 블록 그리기</div>
+    <div class="pnote">팝업을 열어둔 채로 지도를 탭해 꼭짓점을 추가하세요. 완료를 탭하면 블록이 생성됩니다.</div>
+    <div class="pf"><label>블록 이름</label><input type="text" id="blk-name" placeholder="예: A구역, 공원 북측"/></div>
+    <div class="chips" id="chips-blk">
+      <div class="chip" data-val="주택가">주택가</div><div class="chip" data-val="상점가">상점가</div>
+      <div class="chip" data-val="공원인접">공원인접</div><div class="chip" data-val="스쿨존">스쿨존</div>
+      <div class="chip" data-val="완충녹지">완충녹지</div>
+    </div>
+    <div style="font-size:12px;color:var(--blue);margin-top:8px;" id="blk-pt-count">꼭짓점 0개</div>
+    <div class="pbtns" style="margin-top:12px;">
+      <button class="pb-c" onclick="cancelBlock()">취소</button>
+      <button class="pb-s" onclick="finishBlock()">완료</button>
+    </div>
+  </div>
+</div>
+
+<!-- 라인 속성 팝업 -->
+<div class="pop" id="pop-line">
+  <div class="pbox">
+    <div class="ptitle" id="lp-title">구간 속성 입력</div>
+    <div class="pauto" id="lp-auto"></div>
+    <div class="pnote" id="lp-note"></div>
+    <div class="tgrid">
+      <div class="tbtn t-w"  id="t-w"  onclick="selT('white')">— 흰색 실선<br><small style="font-weight:400;font-size:11px;">주정차 허용</small></div>
+      <div class="tbtn t-y1" id="t-y1" onclick="selT('yellow1')">— 황색 단선<br><small style="font-weight:400;font-size:11px;">주정차 금지</small></div>
+      <div class="tbtn t-y2" id="t-y2" onclick="selT('yellow2')">= 황색 복선<br><small style="font-weight:400;font-size:11px;">스쿨존</small></div>
+      <div class="tbtn t-ob" id="t-ob" onclick="selT('obstacle')">🚫 적치물<br><small style="font-weight:400;font-size:11px;">상점 점용</small></div>
+    </div>
+    <div id="lp-ci" style="display:none;">
+      <div class="ci-box">
+        <div class="ci-ttl">🔢 카운터 값 가져오기</div>
+        <div class="ci-vals" id="ci-vals"></div>
+        <button class="ci-btn" onclick="importCnt()">이 값으로 입력</button>
+      </div>
+    </div>
+    <div class="pr2">
+      <div class="pf"><label>주차 차량 수</label><input type="number" id="lp-cars" placeholder="0" min="0"/></div>
+      <div class="pf"><label>대형차 수</label><input type="number" id="lp-large" placeholder="0" min="0"/></div>
+    </div>
+    <div class="pr2">
+      <div class="pf"><label>캠핑카 수</label><input type="number" id="lp-camp" placeholder="0" min="0"/></div>
+      <div class="pf"><label>혼잡도</label>
+        <select id="lp-cong"><option value="">선택 안 함</option><option>여유</option><option>보통</option><option>혼잡</option><option>매우 혼잡</option></select>
+      </div>
+    </div>
+    <div class="pf" id="lp-obs" style="display:none;"><label>적치물 종류</label>
+      <div class="chips" id="chips-obs">
+        <div class="chip" data-val="콘">콘</div><div class="chip" data-val="화분">화분</div>
+        <div class="chip" data-val="의자">의자</div><div class="chip" data-val="벽돌·블록">벽돌·블록</div><div class="chip" data-val="기타">기타</div>
+      </div>
+    </div>
+    <div class="pf"><label>메모</label><input type="text" id="lp-memo" placeholder="특이사항"/></div>
+    <div class="pbtns">
+      <button class="pb-c" onclick="cancelLine()">취소 (라인 삭제)</button>
+      <button class="pb-s" onclick="saveLine()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 카운터 추가 팝업 -->
+<div class="pop" id="pop-addcnt">
+  <div class="pbox">
+    <div class="ptitle">+ 카운터 추가</div>
+    <div class="pf"><label>이름</label><input type="text" id="ac-name" placeholder="예: 오토바이, 불법주차"/></div>
+    <div class="pf"><label>이모지</label><input type="text" id="ac-icon" placeholder="예: 🛵 🚲 ⚠️"/></div>
+    <div class="pbtns">
+      <button class="pb-c" onclick="closePop('pop-addcnt')">취소</button>
+      <button class="pb-s" onclick="addCnt()">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- 내보내기 팝업 -->
+<div class="pop" id="pop-export">
+  <div class="pbox">
+    <div class="ptitle">💾 데이터 내보내기</div>
+    <div id="exp-summary" style="font-size:12px;color:var(--gray5);background:var(--gray0);border-radius:8px;padding:10px;margin-bottom:14px;line-height:1.8;"></div>
+    <button style="width:100%;padding:13px;margin-bottom:8px;background:var(--green);color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:700;cursor:pointer;" onclick="expCSV()">CSV 다운로드 (엑셀)</button>
+    <button style="width:100%;padding:13px;margin-bottom:8px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:700;cursor:pointer;" onclick="expJSON()">JSON 다운로드 (AI 분석)</button>
+    <button style="width:100%;padding:13px;margin-bottom:8px;background:var(--gray1);color:var(--gray7);border:none;border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer;" onclick="expClip()">클립보드 복사</button>
+    <button class="pb-c" style="width:100%;padding:11px;" onclick="closePop('pop-export')">닫기</button>
+  </div>
+</div>
+
+<!-- 확인 다이얼로그 -->
+<div id="cdlg">
+  <div class="cbox">
+    <div class="cttl" id="c-title">확인</div>
+    <div class="cmsg" id="c-msg"></div>
+    <div class="cbtns">
+      <button class="cc" onclick="cRes(false)">아니오</button>
+      <button class="co" id="c-ok" onclick="cRes(true)">확인</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── 데이터 ── */
+let blocks   = JSON.parse(localStorage.getItem('sv7_blk') || '[]');
+let segments = JSON.parse(localStorage.getItem('sv7_seg') || '[]');
+let customCnts = JSON.parse(localStorage.getItem('sv7_cst') || '[]');
+let mapLayers = {}, currentPos = null, rawPos = null, calibOffset = null;
+let locMk = null, locCir = null;
+let activeLine = null;
+let blockDrawing = false, blkPts = [], blkTmpMks = [], blkTmpLine = null;
+let pendingSeg = null, selType = null;
+let counters = {}, cntPts = [];
+
+const LC = {
+  white:   {color:'#9ca3af',weight:5,dash:'8,4', label:'흰색 실선',      bid:'lb-w'},
+  yellow1: {color:'#ca8a04',weight:5,dash:'',    label:'황색 단선',      bid:'lb-y1'},
+  yellow2: {color:'#b45309',weight:6,dash:'3,4', label:'황색 복선(스쿨존)',bid:'lb-y2'},
+  obstacle:{color:'#dc2626',weight:6,dash:'',    label:'적치물 구간',    bid:'lb-ob'},
+};
+const DC=[
+  {key:'car',   icon:'🚗',lbl:'일반차량',cls:'c-car'},
+  {key:'large', icon:'🚛',lbl:'대형차',  cls:'c-large'},
+  {key:'camp',  icon:'🚐',lbl:'캠핑카',  cls:'c-camp'},
+  {key:'obs',   icon:'🚫',lbl:'적치물',  cls:'c-obs'},
+  {key:'vacant',icon:'🟩',lbl:'유휴지',  cls:'c-vacant'},
+];
+const BCOLS=['#1d4ed8','#059669','#dc2626','#d97706','#7c3aed','#0891b2'];
+const TODAY=new Date().toISOString().split('T')[0];
+
+/* ── 지도 ── */
+const map=L.map('map',{zoomControl:true,doubleClickZoom:false}).setView([35.2101,126.8404],17);
+const TILES=[
+  {lbl:'🗺 일반',url:'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',opt:{attribution:'© CARTO',subdomains:'abcd',maxZoom:19}},
+  {lbl:'🛰 위성',url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',opt:{attribution:'© Esri',maxZoom:19}},
+];
+let tIdx=0, tile=L.tileLayer(TILES[0].url,TILES[0].opt).addTo(map);
+function cycleMap(){map.removeLayer(tile);tIdx=(tIdx+1)%TILES.length;tile=L.tileLayer(TILES[tIdx].url,TILES[tIdx].opt).addTo(map);document.querySelector('.hbtn').textContent=TILES[tIdx].lbl;}
+
+/* ── GPS ── */
+(function(){
+  if(!navigator.geolocation)return;
+  navigator.geolocation.getCurrentPosition(p=>{map.setView([p.coords.latitude,p.coords.longitude],17);},()=>{},{enableHighAccuracy:true,timeout:8000});
+  navigator.geolocation.watchPosition(p=>{
+    rawPos=[p.coords.latitude,p.coords.longitude];
+    currentPos=calibOffset?[rawPos[0]-calibOffset.lat,rawPos[1]-calibOffset.lng]:rawPos;
+    const acc=Math.round(p.coords.accuracy);
+    const b=document.getElementById('gps-badge');
+    b.textContent=calibOffset?`GPS ±${acc}m ✓보정`:`GPS ±${acc}m`;
+    b.className=calibOffset?'calib':acc<=15?'ok':'';
+    updLoc(currentPos,acc);
+  },()=>{document.getElementById('gps-badge').textContent='GPS 오류';},{enableHighAccuracy:true,maximumAge:5000});
+})();
+function updLoc(pos,acc){
+  if(locCir)map.removeLayer(locCir);if(locMk)map.removeLayer(locMk);
+  locCir=L.circle(pos,{radius:acc,color:'#3b82f6',fillColor:'#3b82f6',fillOpacity:.1,weight:1}).addTo(map);
+  locMk=L.circleMarker(pos,{radius:9,color:'#fff',fillColor:'#1d4ed8',fillOpacity:1,weight:2.5}).addTo(map);
+  locMk.bindTooltip(calibOffset?'현재 위치 (보정됨)':'현재 위치',{permanent:false,direction:'top'});
+}
+
+/* ── 보정 ── */
+function calibrate(){
+  if(!rawPos){alert('GPS 신호를 기다리는 중입니다.');return;}
+  if(!blocks.length){alert('먼저 블록을 그려주세요.\n블록 꼭짓점 중 하나를 현재 위치로 보정합니다.');return;}
+  let allPts=[];
+  blocks.forEach(b=>b.points.forEach(pt=>allPts.push({lat:pt[0],lng:pt[1],name:b.name})));
+  const near=allPts.reduce((best,pt)=>{const d=haverDist(rawPos[0],rawPos[1],pt.lat,pt.lng);return d<best.d?{d,pt}:best;},{d:Infinity,pt:null});
+  const dm=Math.round(near.d);
+  confirm2('위치 보정',`가장 가까운 꼭짓점: [${near.pt.name}] ${dm}m 거리\n\n현재 서 있는 곳이 이 꼭짓점이 맞나요?`,'보정 적용','#059669').then(ok=>{
+    if(!ok)return;
+    calibOffset={lat:rawPos[0]-near.pt.lat,lng:rawPos[1]-near.pt.lng};
+    document.getElementById('calib-info').textContent=`보정 적용 중 (오프셋 ${dm}m)`;
+    const cb=document.getElementById('bb-calib');
+    cb.classList.add('done');cb.textContent='✓ 보정됨';
+    setBanner(`위치 보정 완료 — 오프셋 ${dm}m 적용`);
+  });
+}
+
+/* ── 블록 ── */
+function openBlockDraw(){
+  blockDrawing=true;blkPts=[];blkTmpMks=[];blkTmpLine=null;
+  document.getElementById('blk-name').value=String.fromCharCode(65+blocks.length)+'구역';
+  document.querySelectorAll('#chips-blk .chip').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('blk-pt-count').textContent='꼭짓점 0개';
+  openPop('pop-block');
+  setBanner('블록 그리기 — 지도를 탭해 꼭짓점 추가');
+}
+function cancelBlock(){
+  blockDrawing=false;blkPts=[];
+  blkTmpMks.forEach(m=>map.removeLayer(m));blkTmpMks=[];
+  if(blkTmpLine){map.removeLayer(blkTmpLine);blkTmpLine=null;}
+  closePop('pop-block');setBanner('블록을 그리거나 조사를 시작하세요');
+}
+function finishBlock(){
+  if(blkPts.length<3){alert('최소 3개 꼭짓점이 필요합니다.');return;}
+  const name=document.getElementById('blk-name').value.trim()||String.fromCharCode(65+blocks.length)+'구역';
+  const traits=Array.from(document.querySelectorAll('#chips-blk .chip.sel')).map(c=>c.dataset.val);
+  const color=BCOLS[blocks.length%BCOLS.length];
+  const id=Date.now();
+  const pts=blkPts.map(m=>{const ll=m.getLatLng();return[ll.lat,ll.lng];});
+  const block={id,name,traits,color,points:pts};
+  addBlockToMap(block);
+  blkTmpMks.forEach(m=>map.removeLayer(m));
+  if(blkTmpLine){map.removeLayer(blkTmpLine);blkTmpLine=null;}
+  blocks.push(block);save();
+  closePop('pop-block');blockDrawing=false;blkPts=[];
+  setBanner(`블록 "${name}" 생성 완료 — 꼭짓점을 탭해 라인 시작/종료`);
+}
+function addBlockToMap(b){
+  const poly=L.polygon(b.points,{color:b.color,weight:2.5,fillColor:b.color,fillOpacity:.12,bubblingMouseEvents:true}).addTo(map);
+  poly.on('click',e=>{if(blockDrawing||activeLine)return;L.DomEvent.stop(e);});
+  const lm=L.marker(poly.getBounds().getCenter(),{
+    icon:L.divIcon({html:`<div style="background:${b.color};color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.3)">${b.name}</div>`,className:'',iconAnchor:[30,10]}),interactive:false
+  }).addTo(map);
+  mapLayers['blk_'+b.id]={poly,lm,vx:[]};
+  // 꼭짓점 마커
+  b.points.forEach((pt,i)=>{
+    const mk=L.circleMarker([pt[0],pt[1]],{radius:8,color:b.color,fillColor:'#fff',fillOpacity:1,weight:2.5}).addTo(map);
+    mk.bindTooltip(`${b.name} 꼭짓점${i+1}`,{direction:'top',offset:[0,-4]});
+    mk.on('click',e=>{L.DomEvent.stop(e);onVertexTap([pt[0],pt[1]],b.name);});
+    mapLayers['blk_'+b.id].vx.push(mk);
+  });
+}
+
+map.on('click',function(e){
+  if(!blockDrawing)return;
+  const mk=L.circleMarker(e.latlng,{radius:5,color:'#1d4ed8',fillColor:'#1d4ed8',fillOpacity:1}).addTo(map);
+  blkTmpMks.push(mk);blkPts.push(mk);
+  if(blkTmpLine)map.removeLayer(blkTmpLine);
+  if(blkPts.length>1){blkTmpLine=L.polyline(blkPts.map(m=>{const ll=m.getLatLng();return[ll.lat,ll.lng];}),{color:'#1d4ed8',weight:2,dashArray:'5'}).addTo(map);}
+  document.getElementById('blk-pt-count').textContent=`꼭짓점 ${blkPts.length}개`;
+});
+
+/* ── 꼭짓점 탭 → 라인 시작/종료 ── */
+function onVertexTap(latlng,blockName){
+  if(!activeLine){setBanner('먼저 위의 라인 버튼 중 하나를 탭하세요');return;}
+  const cfg=LC[activeLine.type];
+  if(!activeLine.startLL){
+    activeLine.startLL=latlng;activeLine.startTime=nowStr();activeLine.blockName=blockName;
+    activeLine.sMk=L.circleMarker(latlng,{radius:9,color:cfg.color,fillColor:cfg.color,fillOpacity:.9,weight:2}).addTo(map);
+    document.getElementById('banner-dot').classList.add('rec');
+    setBanner(`${cfg.label} 기록 중 — 종료 꼭짓점을 탭하세요 (같은 버튼 탭 = 취소)`);
+  } else {
+    const endLL=latlng;
+    const len=Math.round(haverDist(activeLine.startLL[0],activeLine.startLL[1],endLL[0],endLL[1]));
+    confirm2('구간 종료',`${cfg.label}\n측정 거리: ${fmtLen(len)}\n\n이 구간을 완료할까요?`,'완료',cfg.color).then(ok=>{
+      if(!ok)return;
+      const pl=L.polyline([activeLine.startLL,endLL],{color:cfg.color,weight:cfg.weight,dashArray:cfg.dash||null,opacity:.9}).addTo(map);
+      if(activeLine.sMk)map.removeLayer(activeLine.sMk);
+      pendingSeg={type:activeLine.type,startLL:activeLine.startLL,endLL,length:len,startTime:activeLine.startTime,endTime:nowStr(),blockName:activeLine.blockName||blockName,tmpLine:pl};
+      resetLine();openLinePop();
+    });
+  }
+}
+
+/* ── 라인 버튼 ── */
+function toggleLine(){
+  if(activeLine){
+    confirm2('라인 취소','현재 기록 중인 라인을 취소할까요?','아니오','#dc2626').then(ok=>{if(ok)resetLine();});
+    return;
+  }
+  activeLine={type:null,startLL:null,startTime:null,blockName:null,sMk:null};
+  document.getElementById('lb-main').classList.add('rec');
+  document.getElementById('lb-main').textContent='● 기록 중 — 재탭: 취소';
+  setBanner('구간 기록 시작 — 블록 꼭짓점을 탭해 시작점 선택');
+}
+function resetLine(){
+  if(activeLine?.sMk)map.removeLayer(activeLine.sMk);
+  activeLine=null;
+  const lb=document.getElementById('lb-main');
+  if(lb){lb.classList.remove('rec');lb.textContent='● 구간 기록 시작';}
+  document.getElementById('banner-dot').classList.remove('rec');
+  setBanner('라인 버튼을 탭해 구간 기록을 시작하세요');
+}
+
+/* ── 라인 속성 팝업 ── */
+function openLinePop(){
+  selType=null;
+  document.getElementById('lp-title').textContent='구간 속성 입력';
+  document.getElementById('lp-auto').textContent=`📐 거리 자동 계산: ${fmtLen(pendingSeg.length)}  |  ${pendingSeg.startTime} ~ ${pendingSeg.endTime}`;
+  document.getElementById('lp-note').textContent='구간 유형을 선택하세요.';
+  ['t-w','t-y1','t-y2','t-ob'].forEach(id=>document.getElementById(id).classList.remove('sel'));
+  const total=Object.values(counters).reduce((a,b)=>a+b,0);
+  if(total>0){
+    const ac=[...DC,...customCnts];
+    document.getElementById('ci-vals').textContent=ac.filter(c=>counters[c.key]>0).map(c=>`${c.icon} ${c.lbl}: ${counters[c.key]}`).join('  ');
+    document.getElementById('lp-ci').style.display='';
+  }else document.getElementById('lp-ci').style.display='none';
+  document.getElementById('lp-cars').value='';document.getElementById('lp-large').value='';
+  document.getElementById('lp-camp').value='';document.getElementById('lp-cong').value='';
+  document.getElementById('lp-memo').value='';
+  document.querySelectorAll('#chips-obs .chip').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('lp-obs').style.display=selType==='obstacle'?'':'none';
+  openPop('pop-line');
+}
+function selT(t){
+  selType=t;
+  ['t-w','t-y1','t-y2','t-ob'].forEach(id=>document.getElementById(id).classList.remove('sel'));
+  const sm={white:'t-w',yellow1:'t-y1',yellow2:'t-y2',obstacle:'t-ob'};
+  if(sm[t])document.getElementById(sm[t]).classList.add('sel');
+  document.getElementById('lp-obs').style.display=t==='obstacle'?'':'none';
+  const notes={white:'흰색 실선 — 주정차 허용. 단속 불가.',yellow1:'황색 단선 — 주정차 금지.',yellow2:'황색 복선 — 스쿨존. 08~18시 단속 (정문 08~20시).',obstacle:'적치물 — 상점 등이 점용한 구간.'};
+  document.getElementById('lp-note').textContent=notes[t]||'';
+}
+function importCnt(){
+  const ac=[...DC,...customCnts];
+  const total=ac.reduce((s,c)=>s+(counters[c.key]||0),0);
+  document.getElementById('lp-cars').value=total;
+  document.getElementById('lp-large').value=counters['large']||0;
+  document.getElementById('lp-camp').value=counters['camp']||0;
+}
+function cancelLine(){
+  if(pendingSeg?.tmpLine)map.removeLayer(pendingSeg.tmpLine);
+  pendingSeg=null;closePop('pop-line');setBanner('라인 취소됨');
+}
+function saveLine(){
+  if(!selType){alert('구간 유형을 선택하세요.');return;}
+  if(!pendingSeg)return;
+  const cfg=LC[selType];
+  if(pendingSeg.tmpLine)map.removeLayer(pendingSeg.tmpLine);
+  const pl=L.polyline([pendingSeg.startLL,pendingSeg.endLL],{color:cfg.color,weight:cfg.weight,dashArray:cfg.dash||null,opacity:.9}).addTo(map);
+  pl.bindTooltip(`${cfg.label} · ${fmtLen(pendingSeg.length)} · 차량 ${document.getElementById('lp-cars').value||0}대`,{direction:'top'});
+  const seg={id:Date.now(),type:selType,start:pendingSeg.startLL,end:pendingSeg.endLL,length:pendingSeg.length,startTime:pendingSeg.startTime,endTime:pendingSeg.endTime,blockName:pendingSeg.blockName||'',attr:{cars:document.getElementById('lp-cars').value||'0',large:document.getElementById('lp-large').value||'0',camp:document.getElementById('lp-camp').value||'0',congestion:document.getElementById('lp-cong').value,obstacles:Array.from(document.querySelectorAll('#chips-obs .chip.sel')).map(c=>c.dataset.val),memo:document.getElementById('lp-memo').value.trim()}};
+  pl.on('click',e=>{if(activeLine)return;if(confirm(`"${cfg.label}" 라인을 삭제할까요?`))delSeg(seg.id);});
+  mapLayers['seg_'+seg.id]=pl;
+  segments.push(seg);pendingSeg=null;save();closePop('pop-line');
+  setBanner(`${cfg.label} 저장 완료 (${fmtLen(seg.length)}) — 총 ${segments.length}개`);
+}
+
+/* ── 카운터 ── */
+function initCnt(){
+  // 기본 5종
+  DC.forEach(c=>{if(counters[c.key]===undefined)counters[c.key]=0;});
+  // 커스텀
+  customCnts.forEach(c=>{if(counters[c.key]===undefined)counters[c.key]=0;});
+  renderCnt();
+}
+function renderCnt(){
+  // 기본 5종은 HTML 고정 — 숫자만 갱신
+  DC.forEach(c=>{
+    const el=document.getElementById('cnt-'+c.key);
+    if(el)el.textContent=counters[c.key]||0;
+  });
+  // 커스텀 카운터만 동적 렌더링
+  const g=document.getElementById('counter-grid');
+  // 기존 커스텀 버튼 제거 후 재생성
+  g.querySelectorAll('.c-custom').forEach(el=>el.remove());
+  customCnts.forEach(c=>{
+    const d=document.createElement('div');
+    d.className='cnt-btn c-custom';d.id='cb-'+c.key;
+    d.innerHTML=`<span class="cnt-del" onclick="delCnt('${c.key}');event.stopPropagation()">✕</span><div class="cnt-icon">${c.icon}</div><div class="cnt-lbl">${c.lbl}</div><div class="cnt-num" id="cnt-${c.key}">${counters[c.key]||0}</div><div class="cnt-hint">꾹=취소</div>`;
+    d.addEventListener('click',()=>doCnt(c.key));
+    d.addEventListener('contextmenu',e=>{e.preventDefault();undoCnt(c.key);});
+    g.appendChild(d);
+  });
+}
+function doCnt(key){
+  counters[key]=(counters[key]||0)+1;
+  const el=document.getElementById('cnt-'+key);if(el)el.textContent=counters[key];
+  if(currentPos){
+    const j=(Math.random()-.5)*.00003;
+    const ll=[currentPos[0]+j,currentPos[1]+j];
+    const c=[...DC,...customCnts].find(c=>c.key===key);
+    const col=c?.cls?.includes('car')?'#3b82f6':c?.cls?.includes('large')?'#f59e0b':c?.cls?.includes('camp')?'#8b5cf6':c?.cls?.includes('obs')?'#ef4444':c?.cls?.includes('vacant')?'#10b981':'#6b7280';
+    const mk=L.circleMarker(ll,{radius:6,color:col,fillColor:col,fillOpacity:.85,weight:2}).addTo(map);
+    mk.bindTooltip((c?.icon||'•')+' '+(c?.lbl||key),{permanent:false,direction:'top'});
+    cntPts.push({key,mk});
+  }
+}
+function undoCnt(key){
+  if(!counters[key])return;
+  counters[key]--;
+  const el=document.getElementById('cnt-'+key);if(el)el.textContent=counters[key];
+  for(let i=cntPts.length-1;i>=0;i--){if(cntPts[i].key===key){map.removeLayer(cntPts[i].mk);cntPts.splice(i,1);break;}}
+}
+function resetCnt(){if(!confirm('카운터를 모두 초기화할까요?'))return;Object.keys(counters).forEach(k=>counters[k]=0);cntPts.forEach(p=>map.removeLayer(p.mk));cntPts=[];renderCnt();}
+function resetCntPts(){if(!cntPts.length){alert('지도에 표시된 탭 포인트가 없습니다.');return;}if(!confirm(`지도의 카운터 포인트 ${cntPts.length}개를 삭제할까요?
+(숫자는 유지됩니다)`))return;cntPts.forEach(p=>map.removeLayer(p.mk));cntPts=[];}
+function openAddCnt(){document.getElementById('ac-name').value='';document.getElementById('ac-icon').value='';openPop('pop-addcnt');}
+function addCnt(){
+  const name=document.getElementById('ac-name').value.trim();if(!name){alert('이름을 입력하세요.');return;}
+  const icon=document.getElementById('ac-icon').value.trim()||'📌';
+  const key='c_'+Date.now();
+  customCnts.push({key,icon,lbl:name,cls:'c-custom'});
+  counters[key]=0;
+  localStorage.setItem('sv7_cst',JSON.stringify(customCnts));
+  renderCnt();closePop('pop-addcnt');
+}
+function delCnt(key){
+  if(!confirm('이 카운터를 삭제할까요?'))return;
+  customCnts=customCnts.filter(c=>c.key!==key);delete counters[key];
+  localStorage.setItem('sv7_cst',JSON.stringify(customCnts));renderCnt();
+}
+
+/* ── 목록 ── */
+function openList(){
+  let html='';
+  if(blocks.length){
+    html+=`<div class="ls-ttl">블록 (${blocks.length})</div>`;
+    blocks.forEach(b=>{
+      const n=segments.filter(s=>s.blockName===b.name).length;
+      html+=`<div class="lcard"><div style="width:10px;height:10px;border-radius:2px;background:${b.color};flex-shrink:0;"></div><div class="linfo"><div class="lname">${b.name}</div><div class="ldetail">${b.traits.join('·')||'특성 없음'} · 라인 ${n}개</div></div><span class="ldel" onclick="delBlk(${b.id})">삭제</span></div>`;
+    });
+  }
+  if(segments.length){
+    html+=`<div class="ls-ttl">구간 라인 (${segments.length})</div>`;
+    segments.forEach(s=>{
+      const cfg=LC[s.type]||LC.white;
+      html+=`<div class="lcard"><div class="lcolor" style="background:${cfg.color};"></div><div class="linfo"><div class="lname">${cfg.label}</div><div class="ldetail">${fmtLen(s.length)} · 차량 ${s.attr?.cars||0}대${s.blockName?' · '+s.blockName:''}</div></div><span class="ldel" onclick="delSeg(${s.id})">삭제</span></div>`;
+    });
+  }
+  document.getElementById('list-body').innerHTML=html||'<div class="empty">저장된 데이터가 없습니다.</div>';
+  document.getElementById('list-panel').classList.add('open');
+}
+function closeList(){document.getElementById('list-panel').classList.remove('open');}
+function delBlk(id){
+  if(!confirm('이 블록을 삭제할까요?'))return;
+  const l=mapLayers['blk_'+id];
+  if(l){map.removeLayer(l.poly);map.removeLayer(l.lm);(l.vx||[]).forEach(m=>map.removeLayer(m));}
+  delete mapLayers['blk_'+id];blocks=blocks.filter(b=>b.id!==id);save();openList();
+}
+function delSeg(id){
+  if(!confirm('이 라인을 삭제할까요?'))return;
+  const l=mapLayers['seg_'+id];if(l)map.removeLayer(l);delete mapLayers['seg_'+id];
+  segments=segments.filter(s=>s.id!==id);save();openList();
+}
+
+/* ── 내보내기 ── */
+function openExport(){
+  const tc=segments.reduce((s,l)=>s+(parseInt(l.attr?.cars)||0),0);
+  const tl=segments.reduce((s,l)=>s+(l.length||0),0);
+  document.getElementById('exp-summary').innerHTML=`조사일: ${TODAY}<br>블록: ${blocks.length}개 · 라인: ${segments.length}개<br>총 거리: ${fmtLen(tl)}<br>총 차량: ${tc}대${calibOffset?'<br>✓ GPS 보정 적용':'<br>⚠ GPS 보정 미적용'}`;
+  openPop('pop-export');
+}
+function buildData(){return{title:'무양공원 주변 주차난 현장조사',location:'광주광역시 광산구 월계동',surveyDate:TODAY,gpsCalibrated:!!calibOffset,summary:{blocks:blocks.length,segments:segments.length,totalCars:segments.reduce((s,l)=>s+(parseInt(l.attr?.cars)||0),0),totalLength:fmtLen(segments.reduce((s,l)=>s+(l.length||0),0))},blocks:blocks.map(b=>({name:b.name,traits:b.traits})),segments:segments.map(s=>({type:LC[s.type]?.label||s.type,length:fmtLen(s.length),block:s.blockName,...s.attr,startTime:s.startTime,endTime:s.endTime}))};}
+function expCSV(){const h=['구간유형','블록','거리','차량수','대형차','캠핑카','혼잡도','적치물','시작','종료','메모'];const r=segments.map(s=>{const a=s.attr||{};return[LC[s.type]?.label||s.type,s.blockName||'',fmtLen(s.length),a.cars||0,a.large||0,a.camp||0,a.congestion||'',(a.obstacles||[]).join('|'),s.startTime||'',s.endTime||'',a.memo||''].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',');});dl('\uFEFF'+[h.join(','),...r].join('\n'),`무양공원_현장조사_${TODAY}.csv`,'text/csv');closePop('pop-export');}
+function expJSON(){dl(JSON.stringify(buildData(),null,2),`무양공원_현장조사_${TODAY}.json`,'application/json');closePop('pop-export');}
+function expClip(){navigator.clipboard.writeText(JSON.stringify(buildData(),null,2)).then(()=>{alert('복사됨!');closePop('pop-export');});}
+function dl(c,f,t){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:t}));a.download=f;a.click();}
+
+/* ── 유틸 ── */
+function setBanner(t){document.getElementById('banner-text').textContent=t;}
+function nowStr(){return new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});}
+function openPop(id){document.getElementById(id).classList.add('open');}
+function closePop(id){document.getElementById(id).classList.remove('open');}
+function haverDist(lat1,lng1,lat2,lng2){const R=6371000,dL=(lat2-lat1)*Math.PI/180,dG=(lng2-lng1)*Math.PI/180;const a=Math.sin(dL/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dG/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
+function fmtLen(m){return m>=1000?`${(m/1000).toFixed(2)}km`:`${m}m`;}
+function save(){localStorage.setItem('sv7_blk',JSON.stringify(blocks.map(b=>({id:b.id,name:b.name,traits:b.traits,color:b.color,points:b.points}))));localStorage.setItem('sv7_seg',JSON.stringify(segments.map(s=>({id:s.id,type:s.type,start:s.start,end:s.end,length:s.length,startTime:s.startTime,endTime:s.endTime,blockName:s.blockName,attr:s.attr}))));}
+
+let _cRes=null;
+function confirm2(title,msg,okLbl='확인',okCol='#dc2626'){
+  document.getElementById('c-title').textContent=title;
+  document.getElementById('c-msg').textContent=msg;
+  document.getElementById('c-ok').textContent=okLbl;
+  document.getElementById('c-ok').style.background=okCol;
+  document.getElementById('cdlg').classList.add('open');
+  return new Promise(r=>_cRes=r);
+}
+function cRes(v){document.getElementById('cdlg').classList.remove('open');if(_cRes){_cRes(v);_cRes=null;}}
+
+// 칩 이벤트
+document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>c.classList.toggle('sel')));
+
+// 복원
+(function(){
+  blocks.forEach(b=>addBlockToMap(b));
+  segments.forEach(s=>{
+    const cfg=LC[s.type]||LC.white;
+    const pl=L.polyline([s.start,s.end],{color:cfg.color,weight:cfg.weight,dashArray:cfg.dash||null,opacity:.9}).addTo(map);
+    pl.bindTooltip(`${cfg.label} · ${fmtLen(s.length)} · 차량 ${s.attr?.cars||0}대`,{direction:'top'});
+    pl.on('click',e=>{if(activeLine)return;if(confirm(`"${cfg.label}" 라인을 삭제할까요?`))delSeg(s.id);});
+    mapLayers['seg_'+s.id]=pl;
+  });
+  initCnt();
+})();
+</script>
+</body>
+</html>
