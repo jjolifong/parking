@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>무양공원 주차밀도 조사 v11</title>
+<title>무양공원 주차밀도 조사 v11.2</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
@@ -66,7 +66,25 @@ html,body{height:100%;font-family:-apple-system,'Apple SD Gothic Neo',sans-serif
 .cnt-x{position:absolute;top:3px;right:3px;width:16px;height:16px;border-radius:50%;background:var(--red-lt);border:1px solid var(--red-bd);color:var(--red);font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .cnt-add{width:100%;padding:12px;border-radius:var(--rs);border:2px dashed var(--gray2);background:transparent;font-size:12px;font-weight:600;color:var(--gray5);cursor:pointer;margin-bottom:4px;}
 .cnt-add:active{background:var(--gray1);}
-/* 사진 */
+/* 슬라이드 카운터 팝업 */
+#pop-slider .pbox{padding:0;border-radius:20px 20px 0 0;overflow:hidden;}
+#slider-wrap{display:flex;width:100%;transition:transform .3s cubic-bezier(.4,0,.2,1);will-change:transform;}
+.slide-page{min-width:100%;display:flex;flex-direction:column;height:calc(100dvh - 80px);}
+.slide-header{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 10px;flex-shrink:0;}
+.slide-name{font-size:13px;font-weight:700;color:var(--gray7);}
+.slide-dots{display:flex;gap:6px;align-items:center;}
+.slide-dot{width:7px;height:7px;border-radius:50%;background:var(--gray2);transition:background .2s;}
+.slide-dot.on{background:var(--blue);}
+.slide-count{font-size:72px;font-weight:800;color:var(--gray9);text-align:center;padding:10px 0;flex-shrink:0;line-height:1;}
+.slide-plus{flex:1;background:var(--blue-lt);display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;-webkit-user-select:none;}
+.slide-plus:active{background:#bfdbfe;}
+.slide-plus-txt{font-size:80px;font-weight:200;color:var(--blue);line-height:1;}
+.slide-minus{flex:1;background:var(--red-lt);display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;-webkit-user-select:none;}
+.slide-minus:active{background:#fecaca;}
+.slide-minus-txt{font-size:80px;font-weight:200;color:var(--red);line-height:1;}
+.slide-divider{height:2px;background:var(--gray2);flex-shrink:0;}
+.slide-footer{padding:10px 16px 20px;display:flex;gap:8px;flex-shrink:0;background:#fff;}
+.slide-close{flex:1;padding:13px;background:var(--gray1);color:var(--gray7);border:none;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;}
 .photo-card{border:1.5px solid var(--gray2);border-radius:var(--r);overflow:hidden;margin-bottom:8px;}
 .photo-card-top{display:flex;gap:10px;padding:10px;}
 .photo-thumb{width:64px;height:64px;flex-shrink:0;border-radius:var(--rs);background:var(--gray1);display:flex;align-items:center;justify-content:center;font-size:26px;border:1px solid var(--gray2);overflow:hidden;}
@@ -130,7 +148,7 @@ html,body{height:100%;font-family:-apple-system,'Apple SD Gothic Neo',sans-serif
 <body>
 <div id="app">
   <div id="header">
-    <h1>무양공원 주차밀도 조사 v11</h1>
+    <h1>무양공원 주차밀도 조사 v11.2</h1>
     <button class="hbtn" onclick="cycleMap()" id="map-btn">🛰 위성</button>
     <div id="gps-badge">GPS 연결중</div>
   </div>
@@ -170,7 +188,7 @@ html,body{height:100%;font-family:-apple-system,'Apple SD Gothic Neo',sans-serif
       <div class="tbtn t-y2" id="lt-y2" onclick="selType('yellow2')">= 황색 복선<br><small style="font-weight:400;font-size:10px;">스쿨존</small></div>
       <div class="tbtn t-ob" id="lt-ob" onclick="selType('obstacle')">🚫 적치물<br><small style="font-weight:400;font-size:10px;">상점 점용</small></div>
     </div>
-    <div class="psec">차량 대수</div>
+    <div class="psec">차량 대수 <button onclick="openSlider()" style="margin-left:8px;padding:3px 10px;border-radius:6px;border:1.5px solid var(--blue-bd);background:var(--blue-lt);color:var(--blue);font-size:11px;font-weight:700;cursor:pointer;">🚗 카운팅 모드</button></div>
     <div id="cnt-bars"></div>
     <button class="cnt-add" onclick="openAddCnt()">+ 카운터 추가</button>
     <div class="psec">현장 사진</div>
@@ -181,6 +199,16 @@ html,body{height:100%;font-family:-apple-system,'Apple SD Gothic Neo',sans-serif
     <div class="pbtns">
       <button class="pb-c" onclick="cancelLineProp()">취소</button>
       <button class="pb-s" onclick="saveLineProp()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 슬라이드 카운터 팝업 -->
+<div class="pop" id="pop-slider">
+  <div class="pbox" style="padding:0;max-height:100dvh;">
+    <div id="slider-wrap"></div>
+    <div class="slide-footer">
+      <button class="slide-close" onclick="closeSlider()">← 속성창으로</button>
     </div>
   </div>
 </div>
@@ -579,16 +607,98 @@ function startPhotoCalib(phId){
 
 function applyPhotoCalib(latlng){
   const ph=lpPhotos.find(p=>p.id===calibPhotoId);
-  if(ph){ph.lat=latlng.lat;ph.lng=latlng.lng;ph.calibrated=true;}
+  if(ph){
+    ph.lat=latlng.lat;ph.lng=latlng.lng;ph.calibrated=true;
+    /* 지도 마커 즉시 이동 */
+    const layers=mapLayers['road_'+editId];
+    if(layers&&layers.photoMks&&layers.photoMks[ph.id]){
+      layers.photoMks[ph.id].setLatLng([ph.lat,ph.lng]);
+      layers.photoMks[ph.id].bindTooltip(`사진 · ${ph.time} (보정됨)`,{direction:'top'});
+    }
+    /* road.photos에도 즉시 반영 + 저장 */
+    const road=roads.find(r=>r.id===editId);
+    if(road){
+      const rph=road.photos.find(p=>p.id===ph.id);
+      if(rph){rph.lat=ph.lat;rph.lng=ph.lng;rph.calibrated=true;}
+      saveData();
+    }
+  }
   document.getElementById('calib-banner').classList.remove('show');
-  calibPhotoId=null;setSt('위치 보정 완료','ok');
-  if(editId)openLineProp(editId);
+  calibPhotoId=null;
+  setSt('위치 보정 완료 — 저장됨','ok');
+  /* 팝업만 다시 열기 — lpCnts/lpPhotos 덮어쓰지 않음 */
+  openPop('pop-line');
+  renderPhotoList();
 }
 
 function cancelPhotoCalib(){
   document.getElementById('calib-banner').classList.remove('show');
   calibPhotoId=null;setSt('보정 취소됨');
-  if(editId)openLineProp(editId);
+  openPop('pop-line');
+}
+
+/* ── 슬라이드 카운터 ── */
+let sliderIdx=0, sliderTouchX=0;
+
+function openSlider(){
+  sliderIdx=0;
+  buildSlider();
+  openPop('pop-slider');
+}
+
+function closeSlider(){
+  closePop('pop-slider');
+  renderCntBars();
+}
+
+function buildSlider(){
+  const allCnts=[...BASE_CNTS,...customCnts];
+  const wrap=document.getElementById('slider-wrap');
+  wrap.innerHTML='';
+  wrap.style.transform='translateX(0%)';
+  allCnts.forEach((c,i)=>{
+    const page=document.createElement('div');
+    page.className='slide-page';
+    const dots=allCnts.map((_,j)=>`<div class="slide-dot${j===i?' on':''}" id="dot-${j}"></div>`).join('');
+    page.innerHTML=`
+      <div class="slide-header">
+        <span class="slide-name">${c.icon} ${c.lbl}</span>
+        <div class="slide-dots">${dots}</div>
+      </div>
+      <div class="slide-count" id="sval-${c.key}">${lpCnts[c.key]||0}</div>
+      <div class="slide-plus" onclick="sliderAdj('${c.key}',1)">
+        <div class="slide-plus-txt">+</div>
+      </div>
+      <div class="slide-divider"></div>
+      <div class="slide-minus" onclick="sliderAdj('${c.key}',-1)">
+        <div class="slide-minus-txt">−</div>
+      </div>`;
+    wrap.appendChild(page);
+  });
+  /* 스와이프 */
+  wrap.addEventListener('touchstart',e=>{sliderTouchX=e.touches[0].clientX;},{passive:true});
+  wrap.addEventListener('touchend',e=>{
+    const dx=e.changedTouches[0].clientX-sliderTouchX;
+    if(Math.abs(dx)>50){
+      const len=[...BASE_CNTS,...customCnts].length;
+      if(dx<0&&sliderIdx<len-1)goSlide(sliderIdx+1);
+      else if(dx>0&&sliderIdx>0)goSlide(sliderIdx-1);
+    }
+  },{passive:true});
+}
+
+function goSlide(idx){
+  sliderIdx=idx;
+  document.getElementById('slider-wrap').style.transform=`translateX(-${idx*100}%)`;
+  document.querySelectorAll('.slide-dot').forEach((d,i)=>d.classList.toggle('on',i===idx));
+  if(navigator.vibrate)navigator.vibrate(30);
+}
+
+function sliderAdj(key,delta){
+  lpCnts[key]=Math.max(0,(lpCnts[key]||0)+delta);
+  const el=document.getElementById('sval-'+key);
+  if(el)el.textContent=lpCnts[key];
+  if(navigator.vibrate)navigator.vibrate(delta>0?15:[10,10,10]);
 }
 
 /* 목록 */
