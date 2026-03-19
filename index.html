@@ -338,11 +338,6 @@ html,body{height:100%;font-family:-apple-system,'Apple SD Gothic Neo',sans-serif
 <div id="cdlg"><div class="cbox"><div class="cttl" id="c-title"></div><div class="cmsg" id="c-msg"></div><div class="cbtns"><button class="cc" onclick="cRes(false)">아니오</button><button class="co" id="c-ok" onclick="cRes(true)">확인</button></div></div></div>
 
 <script>
-/* ══════════════════════════════════════
-   V월드 API 키 — 여기에 키를 입력하세요
-   ══════════════════════════════════════ */
-const VWORLD_KEY = '';
-
 /* ── 상수 ── */
 const LC = {
   white:   {color:'#9ca3af', weight:4, dash:'8,4',  label:'흰색 실선'},
@@ -396,27 +391,13 @@ let photoMarkers   = [];    // 사진 마커 목록
 /* ── 지도 초기화 (v9 방식 — 즉시 타일 추가) ── */
 const map = L.map('map', {zoomControl:true, doubleClickZoom:false}).setView([35.2101,126.8404],17);
 
-let TILES = [];
-(function(){
-  const k = VWORLD_KEY;
-  if(k){
-    TILES = [
-      {lbl:'🗺 일반',      url:`https://api.vworld.kr/req/wmts/1.0.0/${k}/Base/{z}/{y}/{x}.png`,      opt:{attribution:'© 브이월드',maxZoom:19}},
-      {lbl:'🛰 위성',      url:`https://api.vworld.kr/req/wmts/1.0.0/${k}/Satellite/{z}/{y}/{x}.jpeg`,opt:{attribution:'© 브이월드',maxZoom:19}},
-      {lbl:'🛰 하이브리드',url:`https://api.vworld.kr/req/wmts/1.0.0/${k}/Satellite/{z}/{y}/{x}.jpeg`,opt:{attribution:'© 브이월드',maxZoom:19},
-       overlay:`https://api.vworld.kr/req/wmts/1.0.0/${k}/Hybrid/{z}/{y}/{x}.png`},
-    ];
-  } else {
-    TILES = [
-      {lbl:'🗺 일반',url:'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',opt:{attribution:'© CARTO',subdomains:'abcd',maxZoom:19}},
-      {lbl:'🛰 위성',url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',opt:{attribution:'© Esri',maxZoom:19}},
-    ];
-  }
-})();
+const TILES = [
+  {lbl:'🗺 일반',url:'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',opt:{attribution:'© CARTO',subdomains:'abcd',maxZoom:19}},
+  {lbl:'🛰 위성',url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',opt:{attribution:'© Esri',maxZoom:19}},
+];
 
 /* v9 방식: 즉시 타일 추가 */
 let tIdx=0, tile=L.tileLayer(TILES[0].url,TILES[0].opt).addTo(map), overlay=null;
-if(TILES[0].overlay) overlay=L.tileLayer(TILES[0].overlay,{attribution:'© 브이월드',maxZoom:19,opacity:0.9}).addTo(map);
 document.getElementById('map-toggle-btn').textContent=TILES[(tIdx+1)%TILES.length].lbl;
 
 function cycleMap(){
