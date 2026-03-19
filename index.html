@@ -174,9 +174,9 @@ html,body{height:100%;font-family:-apple-system,'Apple SD Gothic Neo',sans-serif
       <div class="cnt-btn c-obs"   id="cb-obs"   onclick="selVehicle('obs')"  ><div class="cnt-icon">🚫</div><div class="cnt-lbl">적치물</div><div class="cnt-num" id="cnt-obs">0</div></div>
     </div>
     <div id="lr-row">
-      <button class="lr-btn lr-left"  id="lr-left"  onclick="doCntSide('left')" >◀ 좌측<br><span id="lr-left-hint"></span></button>
-      <button class="lr-btn lr-vacant" id="lr-vacant" onclick="toggleVacantPin()">🟩 유휴지<br><span id="cnt-vacant">0</span></button>
       <button class="lr-btn lr-right" id="lr-right" onclick="doCntSide('right')">우측 ▶<br><span id="lr-right-hint"></span></button>
+      <button class="lr-btn lr-vacant" id="lr-vacant" onclick="toggleVacantPin()">🟩 유휴지<br><span id="cnt-vacant">0</span></button>
+      <button class="lr-btn lr-left"  id="lr-left"  onclick="doCntSide('left')" >◀ 좌측<br><span id="lr-left-hint"></span></button>
     </div>
     <div id="counter-grid-custom"></div>
   </div>
@@ -216,26 +216,10 @@ html,body{height:100%;font-family:-apple-system,'Apple SD Gothic Neo',sans-serif
 
     <!-- 좌우 선종류 -->
     <div class="side-tabs">
-      <button class="side-tab active" id="lp-tab-r" onclick="lpSide('right')">▶ 우측 선종류</button>
-      <button class="side-tab"        id="lp-tab-l" onclick="lpSide('left')">◀ 좌측 선종류</button>
+      <button class="side-tab active" id="lp-tab-l" onclick="lpSide('left')">◀ 좌측 선종류</button>
+      <button class="side-tab"        id="lp-tab-r" onclick="lpSide('right')">▶ 우측 선종류</button>
     </div>
-    <div class="side-panel active" id="lp-panel-r">
-      <div class="tgrid">
-        <div class="tbtn t-w"  id="lr-w"  onclick="lpSelT('white','right')">— 흰색 실선<br><small style="font-weight:400;font-size:11px;">주정차 허용</small></div>
-        <div class="tbtn t-y1" id="lr-y1" onclick="lpSelT('yellow1','right')">— 황색 단선<br><small style="font-weight:400;font-size:11px;">주정차 금지</small></div>
-        <div class="tbtn t-y2" id="lr-y2" onclick="lpSelT('yellow2','right')">= 황색 복선<br><small style="font-weight:400;font-size:11px;">스쿨존</small></div>
-        <div class="tbtn t-ob" id="lr-ob" onclick="lpSelT('obstacle','right')">🚫 적치물<br><small style="font-weight:400;font-size:11px;">상점 점용</small></div>
-      </div>
-      <div class="pr2">
-        <div class="pf"><label>일반차량</label><input type="number" id="lp-cars-r" placeholder="0" min="0"/></div>
-        <div class="pf"><label>대형차</label><input type="number" id="lp-large-r" placeholder="0" min="0"/></div>
-      </div>
-      <div class="pf"><label>캠핑카</label><input type="number" id="lp-camp-r" placeholder="0" min="0"/></div>
-      <div class="pf" id="lp-obs-r-wrap" style="display:none;"><label>적치물 종류</label>
-        <div class="chips" id="chips-obs-r"><div class="chip" data-val="콘">콘</div><div class="chip" data-val="화분">화분</div><div class="chip" data-val="의자">의자</div><div class="chip" data-val="벽돌·블록">벽돌·블록</div><div class="chip" data-val="기타">기타</div></div>
-      </div>
-    </div>
-    <div class="side-panel" id="lp-panel-l">
+    <div class="side-panel active" id="lp-panel-l">
       <div class="tgrid">
         <div class="tbtn t-w"  id="ll-w"  onclick="lpSelT('white','left')">— 흰색 실선<br><small style="font-weight:400;font-size:11px;">주정차 허용</small></div>
         <div class="tbtn t-y1" id="ll-y1" onclick="lpSelT('yellow1','left')">— 황색 단선<br><small style="font-weight:400;font-size:11px;">주정차 금지</small></div>
@@ -249,6 +233,22 @@ html,body{height:100%;font-family:-apple-system,'Apple SD Gothic Neo',sans-serif
       <div class="pf"><label>캠핑카</label><input type="number" id="lp-camp-l" placeholder="0" min="0"/></div>
       <div class="pf" id="lp-obs-l-wrap" style="display:none;"><label>적치물 종류</label>
         <div class="chips" id="chips-obs-l"><div class="chip" data-val="콘">콘</div><div class="chip" data-val="화분">화분</div><div class="chip" data-val="의자">의자</div><div class="chip" data-val="벽돌·블록">벽돌·블록</div><div class="chip" data-val="기타">기타</div></div>
+      </div>
+    </div>
+    <div class="side-panel" id="lp-panel-r">
+      <div class="tgrid">
+        <div class="tbtn t-w"  id="lr-w"  onclick="lpSelT('white','right')">— 흰색 실선<br><small style="font-weight:400;font-size:11px;">주정차 허용</small></div>
+        <div class="tbtn t-y1" id="lr-y1" onclick="lpSelT('yellow1','right')">— 황색 단선<br><small style="font-weight:400;font-size:11px;">주정차 금지</small></div>
+        <div class="tbtn t-y2" id="lr-y2" onclick="lpSelT('yellow2','right')">= 황색 복선<br><small style="font-weight:400;font-size:11px;">스쿨존</small></div>
+        <div class="tbtn t-ob" id="lr-ob" onclick="lpSelT('obstacle','right')">🚫 적치물<br><small style="font-weight:400;font-size:11px;">상점 점용</small></div>
+      </div>
+      <div class="pr2">
+        <div class="pf"><label>일반차량</label><input type="number" id="lp-cars-r" placeholder="0" min="0"/></div>
+        <div class="pf"><label>대형차</label><input type="number" id="lp-large-r" placeholder="0" min="0"/></div>
+      </div>
+      <div class="pf"><label>캠핑카</label><input type="number" id="lp-camp-r" placeholder="0" min="0"/></div>
+      <div class="pf" id="lp-obs-r-wrap" style="display:none;"><label>적치물 종류</label>
+        <div class="chips" id="chips-obs-r"><div class="chip" data-val="콘">콘</div><div class="chip" data-val="화분">화분</div><div class="chip" data-val="의자">의자</div><div class="chip" data-val="벽돌·블록">벽돌·블록</div><div class="chip" data-val="기타">기타</div></div>
       </div>
     </div>
 
@@ -353,7 +353,7 @@ let lpTypeRight    = null;
 let lpTypeLeft     = null;
 let lpCurrentSide  = 'right';
 
-/* ── 지도 ── */
+/* ── 지도 초기화 (v9 방식 — 즉시 타일 추가) ── */
 const map = L.map('map', {zoomControl:true, doubleClickZoom:false}).setView([35.2101,126.8404],17);
 
 let TILES = [];
@@ -374,17 +374,20 @@ let TILES = [];
   }
 })();
 
-let tIdx = 0, curTile = null, curOverlay = null;
-function applyTile(){
-  if(curTile) map.removeLayer(curTile);
-  if(curOverlay){map.removeLayer(curOverlay);curOverlay=null;}
-  const t = TILES[tIdx];
-  curTile = L.tileLayer(t.url, t.opt).addTo(map);
-  if(t.overlay) curOverlay = L.tileLayer(t.overlay,{attribution:'© 브이월드',maxZoom:19,opacity:0.9}).addTo(map);
-  document.getElementById('map-toggle-btn').textContent = TILES[(tIdx+1)%TILES.length].lbl;
+/* v9 방식: 즉시 타일 추가 */
+let tIdx=0, tile=L.tileLayer(TILES[0].url,TILES[0].opt).addTo(map), overlay=null;
+if(TILES[0].overlay) overlay=L.tileLayer(TILES[0].overlay,{attribution:'© 브이월드',maxZoom:19,opacity:0.9}).addTo(map);
+document.getElementById('map-toggle-btn').textContent=TILES[(tIdx+1)%TILES.length].lbl;
+
+function cycleMap(){
+  map.removeLayer(tile);
+  if(overlay){map.removeLayer(overlay);overlay=null;}
+  tIdx=(tIdx+1)%TILES.length;
+  const t=TILES[tIdx];
+  tile=L.tileLayer(t.url,t.opt).addTo(map);
+  if(t.overlay) overlay=L.tileLayer(t.overlay,{attribution:'© 브이월드',maxZoom:19,opacity:0.9}).addTo(map);
+  document.getElementById('map-toggle-btn').textContent=TILES[(tIdx+1)%TILES.length].lbl;
 }
-applyTile();
-function cycleMap(){tIdx=(tIdx+1)%TILES.length;applyTile();}
 
 /* ── GPS ── */
 (function(){
@@ -500,7 +503,6 @@ function calibrate(){
   document.getElementById('bb-calib').classList.add('done');
   document.getElementById('bb-calib').textContent=`✓ 보정됨 (${dm}m)`;
   setBanner(`📍 위치 보정 완료 — GPS 오차 ${dm}m 보정 적용`);
-}
 }
 
 /* ── 라인 그리기 ── */
@@ -708,7 +710,7 @@ function openLineProp(roadId){
   activeRoadId=roadId;  // 속성 팝업 열면 해당 라인을 활성 라인으로 지정
   lpTypeRight=road.typeRight||'white';
   lpTypeLeft=road.typeLeft||'white';
-  lpCurrentSide='right';
+  lpCurrentSide='left';
 
   const bearing=road.bearing||calcBearing(road.points[0],road.points[road.points.length-1]);
   const bDir=bearingToText(bearing);
@@ -725,7 +727,7 @@ function openLineProp(roadId){
   document.getElementById('lp-remain').value=road.widthRemain||'';
   if(road.widthRemain) calcRemain(); else document.getElementById('lp-remain-result').style.display='none';
 
-  lpSide('right');
+  lpSide('left');
   // 선종류 버튼 초기화
   ['lr-w','lr-y1','lr-y2','lr-ob','ll-w','ll-y1','ll-y2','ll-ob'].forEach(id=>document.getElementById(id)?.classList.remove('sel'));
   lpSetTBtn(lpTypeRight,'right'); lpSetTBtn(lpTypeLeft,'left');
