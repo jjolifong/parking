@@ -162,6 +162,7 @@ html,body{height:100%;font-family:-apple-system,'Apple SD Gothic Neo',sans-serif
     <div id="cnt-label-row">
       <span id="cnt-label">차종 선택 → 좌/우 탭</span>
       <div id="cnt-actions">
+        <button class="ca" style="background:#dbeafe;color:#1d4ed8;border-color:#93c5fd;" onclick="takeFieldPhoto()">📷 현장촬영</button>
         <button class="ca" onclick="openAddCnt()">+ 추가</button>
         <button class="ca" onclick="resetCntPts()">📍 탭 삭제</button>
         <button class="ca" onclick="resetCnt()">🔄 초기화</button>
@@ -174,9 +175,9 @@ html,body{height:100%;font-family:-apple-system,'Apple SD Gothic Neo',sans-serif
       <div class="cnt-btn c-obs"   id="cb-obs"   onclick="selVehicle('obs')"  ><div class="cnt-icon">🚫</div><div class="cnt-lbl">적치물</div><div class="cnt-num" id="cnt-obs">0</div></div>
     </div>
     <div id="lr-row">
-      <button class="lr-btn lr-right" id="lr-right" onclick="doCntSide('right')">우측 ▶<br><span id="lr-right-hint"></span></button>
-      <button class="lr-btn lr-vacant" id="lr-vacant" onclick="toggleVacantPin()">🟩 유휴지<br><span id="cnt-vacant">0</span></button>
       <button class="lr-btn lr-left"  id="lr-left"  onclick="doCntSide('left')" >◀ 좌측<br><span id="lr-left-hint"></span></button>
+      <button class="lr-btn lr-vacant" id="lr-vacant" onclick="toggleVacantPin()">🟩 유휴지<br><span id="cnt-vacant">0</span></button>
+      <button class="lr-btn lr-right" id="lr-right" onclick="doCntSide('right')">우측 ▶<br><span id="lr-right-hint"></span></button>
     </div>
     <div id="counter-grid-custom"></div>
   </div>
@@ -184,6 +185,7 @@ html,body{height:100%;font-family:-apple-system,'Apple SD Gothic Neo',sans-serif
     <button class="bb bb-calib" id="bb-calib" onclick="calibrate()">📍 위치 보정</button>
     <button class="bb" style="background:var(--gray1);color:var(--gray7);" onclick="openList()">📋 목록</button>
     <button class="bb" style="background:var(--teal-lt);color:var(--teal);border:1.5px solid var(--teal);" onclick="openDash()">📊</button>
+    <button class="bb" style="background:#fee2e2;color:#991b1b;border:1.5px solid #fca5a5;" onclick="resetAll()">🗑</button>
     <button class="bb bb-save" onclick="openExport()">💾 저장</button>
   </div>
   <div id="list-panel">
@@ -208,34 +210,19 @@ html,body{height:100%;font-family:-apple-system,'Apple SD Gothic Neo',sans-serif
     <div class="bearing-badge"><span id="lp-arr" style="font-size:18px;transition:transform .3s;">↑</span><span id="lp-bearing-text">방향 계산 중...</span></div>
 
     <!-- 도로폭 -->
-    <div class="pr2" style="margin-bottom:10px;">
-      <div class="pf" style="margin:0"><label>도로 전체 폭 (m)</label><input type="number" id="lp-width" placeholder="예: 5.5" min="1" max="30" step="0.5" oninput="updateEdgeLines()"/></div>
-      <div class="pf" style="margin:0"><label>주차 후 잔여 폭 (m)</label><input type="number" id="lp-remain" placeholder="예: 3.2" min="0" step="0.5" oninput="calcRemain()"/></div>
+    <div class="pf" style="margin-bottom:10px;">
+      <label>주차 후 잔여 도로폭 (m) <span style="font-weight:400;font-size:11px;color:var(--gray5);">— 현장 측정 필수</span></label>
+      <input type="number" id="lp-remain" placeholder="예: 3.2" min="0" step="0.5" oninput="calcRemain()"/>
     </div>
     <div id="lp-remain-result" style="display:none;" class="width-result"></div>
+    <input type="hidden" id="lp-width" value="7"/>
 
     <!-- 좌우 선종류 -->
     <div class="side-tabs">
-      <button class="side-tab active" id="lp-tab-l" onclick="lpSide('left')">◀ 좌측 선종류</button>
-      <button class="side-tab"        id="lp-tab-r" onclick="lpSide('right')">▶ 우측 선종류</button>
+      <button class="side-tab active" id="lp-tab-r" onclick="lpSide('right')">▶ 우측 선종류</button>
+      <button class="side-tab"        id="lp-tab-l" onclick="lpSide('left')">◀ 좌측 선종류</button>
     </div>
-    <div class="side-panel active" id="lp-panel-l">
-      <div class="tgrid">
-        <div class="tbtn t-w"  id="ll-w"  onclick="lpSelT('white','left')">— 흰색 실선<br><small style="font-weight:400;font-size:11px;">주정차 허용</small></div>
-        <div class="tbtn t-y1" id="ll-y1" onclick="lpSelT('yellow1','left')">— 황색 단선<br><small style="font-weight:400;font-size:11px;">주정차 금지</small></div>
-        <div class="tbtn t-y2" id="ll-y2" onclick="lpSelT('yellow2','left')">= 황색 복선<br><small style="font-weight:400;font-size:11px;">스쿨존</small></div>
-        <div class="tbtn t-ob" id="ll-ob" onclick="lpSelT('obstacle','left')">🚫 적치물<br><small style="font-weight:400;font-size:11px;">상점 점용</small></div>
-      </div>
-      <div class="pr2">
-        <div class="pf"><label>일반차량</label><input type="number" id="lp-cars-l" placeholder="0" min="0"/></div>
-        <div class="pf"><label>대형차</label><input type="number" id="lp-large-l" placeholder="0" min="0"/></div>
-      </div>
-      <div class="pf"><label>캠핑카</label><input type="number" id="lp-camp-l" placeholder="0" min="0"/></div>
-      <div class="pf" id="lp-obs-l-wrap" style="display:none;"><label>적치물 종류</label>
-        <div class="chips" id="chips-obs-l"><div class="chip" data-val="콘">콘</div><div class="chip" data-val="화분">화분</div><div class="chip" data-val="의자">의자</div><div class="chip" data-val="벽돌·블록">벽돌·블록</div><div class="chip" data-val="기타">기타</div></div>
-      </div>
-    </div>
-    <div class="side-panel" id="lp-panel-r">
+    <div class="side-panel active" id="lp-panel-r">
       <div class="tgrid">
         <div class="tbtn t-w"  id="lr-w"  onclick="lpSelT('white','right')">— 흰색 실선<br><small style="font-weight:400;font-size:11px;">주정차 허용</small></div>
         <div class="tbtn t-y1" id="lr-y1" onclick="lpSelT('yellow1','right')">— 황색 단선<br><small style="font-weight:400;font-size:11px;">주정차 금지</small></div>
@@ -251,6 +238,22 @@ html,body{height:100%;font-family:-apple-system,'Apple SD Gothic Neo',sans-serif
         <div class="chips" id="chips-obs-r"><div class="chip" data-val="콘">콘</div><div class="chip" data-val="화분">화분</div><div class="chip" data-val="의자">의자</div><div class="chip" data-val="벽돌·블록">벽돌·블록</div><div class="chip" data-val="기타">기타</div></div>
       </div>
     </div>
+    <div class="side-panel" id="lp-panel-l">
+      <div class="tgrid">
+        <div class="tbtn t-w"  id="ll-w"  onclick="lpSelT('white','left')">— 흰색 실선<br><small style="font-weight:400;font-size:11px;">주정차 허용</small></div>
+        <div class="tbtn t-y1" id="ll-y1" onclick="lpSelT('yellow1','left')">— 황색 단선<br><small style="font-weight:400;font-size:11px;">주정차 금지</small></div>
+        <div class="tbtn t-y2" id="ll-y2" onclick="lpSelT('yellow2','left')">= 황색 복선<br><small style="font-weight:400;font-size:11px;">스쿨존</small></div>
+        <div class="tbtn t-ob" id="ll-ob" onclick="lpSelT('obstacle','left')">🚫 적치물<br><small style="font-weight:400;font-size:11px;">상점 점용</small></div>
+      </div>
+      <div class="pr2">
+        <div class="pf"><label>일반차량</label><input type="number" id="lp-cars-l" placeholder="0" min="0"/></div>
+        <div class="pf"><label>대형차</label><input type="number" id="lp-large-l" placeholder="0" min="0"/></div>
+      </div>
+      <div class="pf"><label>캠핑카</label><input type="number" id="lp-camp-l" placeholder="0" min="0"/></div>
+      <div class="pf" id="lp-obs-l-wrap" style="display:none;"><label>적치물 종류</label>
+        <div class="chips" id="chips-obs-l"><div class="chip" data-val="콘">콘</div><div class="chip" data-val="화분">화분</div><div class="chip" data-val="의자">의자</div><div class="chip" data-val="벽돌·블록">벽돌·블록</div><div class="chip" data-val="기타">기타</div></div>
+      </div>
+    </div>
 
     <!-- 카운터 가져오기 -->
     <div id="lp-ci" style="display:none;">
@@ -261,6 +264,9 @@ html,body{height:100%;font-family:-apple-system,'Apple SD Gothic Neo',sans-serif
       <select id="lp-cong"><option value="">선택 안 함</option><option>여유</option><option>보통</option><option>혼잡</option><option>매우혼잡</option></select>
     </div>
     <div class="pf"><label>메모</label><input type="text" id="lp-memo" placeholder="특이사항"/></div>
+    
+    <button style="width:100%;padding:10px;margin:10px 0 0 0;background:#fee2e2;color:#991b1b;border:1.5px solid #fca5a5;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;" onclick="deleteCurrentLine()">🗑 이 라인 삭제</button>
+    
     <div class="pbtns">
       <button class="pb-c" onclick="closePop('pop-line')">닫기</button>
       <button class="pb-s" onclick="saveLine()">저장</button>
@@ -283,6 +289,7 @@ html,body{height:100%;font-family:-apple-system,'Apple SD Gothic Neo',sans-serif
   <div class="pbox" style="max-height:80vh;">
     <div class="ptitle">💾 데이터 내보내기</div>
     <div id="exp-summary" style="font-size:12px;color:var(--gray5);background:var(--gray0);border-radius:8px;padding:10px;margin-bottom:14px;line-height:1.8;"></div>
+    <button style="width:100%;padding:13px;margin-bottom:8px;background:#7c3aed;color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:700;cursor:pointer;" onclick="captureMap()">📸 화면 캡처 (PNG)</button>
     <button style="width:100%;padding:13px;margin-bottom:8px;background:var(--green);color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:700;cursor:pointer;" onclick="expCSV()">CSV 다운로드 (엑셀)</button>
     <button style="width:100%;padding:13px;margin-bottom:8px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:700;cursor:pointer;" onclick="expJSON()">JSON 다운로드 (AI 분석)</button>
     <button style="width:100%;padding:13px;margin-bottom:8px;background:var(--gray1);color:var(--gray7);border:none;border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer;" onclick="expClip()">클립보드 복사</button>
@@ -301,6 +308,31 @@ html,body{height:100%;font-family:-apple-system,'Apple SD Gothic Neo',sans-serif
     </div>
   </div>
 </div>
+
+<!-- 사진 위치 선택 -->
+<div class="pop" id="pop-photo-side">
+  <div class="pbox" style="max-height:300px;">
+    <div class="ptitle">📷 사진 위치 선택</div>
+    <div class="pnote">촬영한 사진이 도로의 어느 쪽에 있나요?</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;">
+      <button style="padding:16px;background:#eff6ff;color:#1d4ed8;border:2px solid #93c5fd;border-radius:var(--rs);font-size:15px;font-weight:700;cursor:pointer;" onclick="saveFieldPhoto('left')">◀ 좌측</button>
+      <button style="padding:16px;background:#eff6ff;color:#1d4ed8;border:2px solid #93c5fd;border-radius:var(--rs);font-size:15px;font-weight:700;cursor:pointer;" onclick="saveFieldPhoto('right')">우측 ▶</button>
+    </div>
+    <button class="pb-c" style="width:100%;margin-top:10px;" onclick="cancelFieldPhoto()">취소</button>
+  </div>
+</div>
+
+<!-- 사진 보기 -->
+<div class="pop" id="pop-photo-view">
+  <div class="pbox" style="max-height:90vh;padding:10px;">
+    <button class="pb-c" style="margin-bottom:10px;" onclick="closePop('pop-photo-view')">← 닫기</button>
+    <img id="photo-view-img" style="width:100%;border-radius:var(--rs);" />
+    <div id="photo-view-info" style="margin-top:10px;font-size:12px;color:var(--gray5);"></div>
+  </div>
+</div>
+
+<!-- 숨겨진 카메라 인풋 -->
+<input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none" />
 
 <!-- 확인 다이얼로그 -->
 <div id="cdlg"><div class="cbox"><div class="cttl" id="c-title"></div><div class="cmsg" id="c-msg"></div><div class="cbtns"><button class="cc" onclick="cRes(false)">아니오</button><button class="co" id="c-ok" onclick="cRes(true)">확인</button></div></div></div>
@@ -352,6 +384,14 @@ let editingRoadId  = null;
 let lpTypeRight    = null;
 let lpTypeLeft     = null;
 let lpCurrentSide  = 'right';
+
+/* 사진 촬영 상태 */
+let pendingPhoto   = null;  // 촬영된 사진 임시 저장
+let photoMarkers   = [];    // 사진 마커 목록
+
+/* 사진 촬영 상태 */
+let pendingPhoto   = null;  // 촬영된 사진 임시 저장
+let photoMarkers   = [];    // 사진 마커 목록
 
 /* ── 지도 초기화 (v9 방식 — 즉시 타일 추가) ── */
 const map = L.map('map', {zoomControl:true, doubleClickZoom:false}).setView([35.2101,126.8404],17);
@@ -710,7 +750,7 @@ function openLineProp(roadId){
   activeRoadId=roadId;  // 속성 팝업 열면 해당 라인을 활성 라인으로 지정
   lpTypeRight=road.typeRight||'white';
   lpTypeLeft=road.typeLeft||'white';
-  lpCurrentSide='left';
+  lpCurrentSide='right';
 
   const bearing=road.bearing||calcBearing(road.points[0],road.points[road.points.length-1]);
   const bDir=bearingToText(bearing);
@@ -723,11 +763,11 @@ function openLineProp(roadId){
   document.getElementById('lp-title').textContent='라인 속성';
   document.getElementById('lp-auto').textContent=`📐 거리: ${fmtLen(road.length)}  |  ${road.startTime||''}`;
 
-  document.getElementById('lp-width').value=road.width||'';
+  document.getElementById('lp-width').value=road.width||7;
   document.getElementById('lp-remain').value=road.widthRemain||'';
   if(road.widthRemain) calcRemain(); else document.getElementById('lp-remain-result').style.display='none';
 
-  lpSide('left');
+  lpSide('right');
   // 선종류 버튼 초기화
   ['lr-w','lr-y1','lr-y2','lr-ob','ll-w','ll-y1','ll-y2','ll-ob'].forEach(id=>document.getElementById(id)?.classList.remove('sel'));
   lpSetTBtn(lpTypeRight,'right'); lpSetTBtn(lpTypeLeft,'left');
@@ -849,6 +889,28 @@ function confirmDelRoad(id){
   });
 }
 
+function deleteCurrentLine(){
+  if(!editingRoadId) return;
+  confirm2('라인 삭제','이 라인을 삭제할까요?','삭제','#dc2626').then(ok=>{
+    if(!ok) return;
+    const id = editingRoadId;
+    const l=mapLayers['road_'+id];
+    if(l){
+      if(l.centerLine) map.removeLayer(l.centerLine);
+      if(l.edgeR)  map.removeLayer(l.edgeR);
+      if(l.edgeL)  map.removeLayer(l.edgeL);
+      if(l.startMk) map.removeLayer(l.startMk);
+      if(l.endMk)   map.removeLayer(l.endMk);
+    }
+    delete mapLayers['road_'+id];
+    roads=roads.filter(r=>r.id!==id);
+    if(activeRoadId===id) activeRoadId=null;
+    saveData();
+    closePop('pop-line');
+    setBanner('라인이 삭제되었습니다');
+  });
+}
+
 /* ── 카운터 ── */
 function initCnt(){
   DC.forEach(c=>{counters[c.key+'_left']=0;counters[c.key+'_right']=0;});
@@ -896,6 +958,8 @@ function doCntSide(side){
     }
   }
 
+  // 카운터 자동 저장
+  saveData();
   plotCntMarker(selectedVehicle,side);
 }
 
@@ -1026,6 +1090,7 @@ function delCnt(key){
 function openList(){
   let html='';
   if(roads.length){
+    html+=`<div style="background:#dbeafe;border:1.5px solid #93c5fd;border-radius:var(--rs);padding:10px;margin-bottom:10px;"><div style="font-size:12px;font-weight:700;color:#1d4ed8;margin-bottom:6px;">🔄 조사 이어하기</div><div style="font-size:11px;color:var(--gray7);line-height:1.6;margin-bottom:8px;">기존 라인을 복사하고 카운터만 초기화하여 같은 구간을 새로 조사합니다.</div><button style="width:100%;padding:10px;background:#1d4ed8;color:#fff;border:none;border-radius:var(--rs);font-size:13px;font-weight:700;cursor:pointer;" onclick="continueS urvey()">📋 현재 조사 이어하기</button></div>`;
     html+=`<div class="ls-ttl">라인 (${roads.length}) — 탭=편집 · 길게누르기=삭제</div>`;
     roads.forEach(r=>{
       const totalCars=(r.cars?.right||0)+(r.cars?.left||0);
@@ -1044,6 +1109,122 @@ function openList(){
   document.getElementById('list-panel').classList.add('open');
 }
 function closeList(){document.getElementById('list-panel').classList.remove('open');}
+
+function continueSurvey(){
+  confirm2('조사 이어하기','현재 라인을 복사하고 카운터를 초기화할까요?\n(라인 속성은 그대로 유지됩니다)','이어하기','#1d4ed8').then(ok=>{
+    if(!ok) return;
+    
+    // 카운터 초기화
+    Object.keys(counters).forEach(k=>counters[k]=0);
+    
+    // 카운터 포인트 마커 제거
+    cntPts.forEach(p=>map.removeLayer(p.mk));
+    cntPts = [];
+    
+    // 사진 마커 제거
+    photoMarkers.forEach(p=>map.removeLayer(p.mk));
+    photoMarkers = [];
+    
+    // 라인의 카운터 초기화
+    roads.forEach(r=>{
+      r.cars = {right:0, left:0};
+      r.large = {right:0, left:0};
+      r.camp = {right:0, left:0};
+      r.obstacles = {right:[], left:[]};
+      r.startTime = nowStr();
+      r.endTime = null;
+      refreshRoadOnMap(r);
+    });
+    
+    renderCnt();
+    saveData();
+    closeList();
+    setBanner('🔄 조사를 이어합니다 — 카운터가 초기화되었습니다');
+  });
+}
+
+function resetAll(){
+  confirm2('전체 초기화','모든 라인, 카운터, 사진을 삭제하고\n완전히 새로 시작할까요?\n\n※ 이 작업은 되돌릴 수 없습니다!','전체 삭제','#dc2626').then(ok=>{
+    if(!ok) return;
+    
+    // 지도에서 모든 레이어 제거
+    roads.forEach(r=>{
+      const l=mapLayers['road_'+r.id];
+      if(l){
+        if(l.centerLine) map.removeLayer(l.centerLine);
+        if(l.edgeR) map.removeLayer(l.edgeR);
+        if(l.edgeL) map.removeLayer(l.edgeL);
+        if(l.startMk) map.removeLayer(l.startMk);
+        if(l.endMk) map.removeLayer(l.endMk);
+      }
+    });
+    
+    cntPts.forEach(p=>map.removeLayer(p.mk));
+    photoMarkers.forEach(p=>map.removeLayer(p.mk));
+    
+    // 데이터 초기화
+    roads = [];
+    mapLayers = {};
+    counters = {};
+    cntPts = [];
+    photoMarkers = [];
+    activeRoadId = null;
+    calibOffset = null;
+    
+    // localStorage 완전 삭제
+    localStorage.removeItem('v10_roads');
+    localStorage.removeItem('v10_counters');
+    localStorage.removeItem('v10_cst');
+    
+    // UI 초기화
+    renderCnt();
+    document.getElementById('calib-info').textContent='GPS 보정 없음 — [위치 보정] 버튼을 탭하세요';
+    document.getElementById('bb-calib').classList.remove('done');
+    document.getElementById('bb-calib').textContent='📍 위치 보정';
+    
+    setBanner('🗑 전체 초기화 완료 — 새로운 조사를 시작하세요');
+    alert('모든 데이터가 삭제되었습니다.\n새로운 조사를 시작할 수 있습니다.');
+  });
+}
+
+/* ── 화면 캡처 ── */
+function captureMap(){
+  setBanner('📸 화면 캡처 중...');
+  
+  // html2canvas 없이 Leaflet 기본 기능으로 간단하게
+  // 방법: canvas로 변환 후 다운로드
+  try {
+    const mapElement = document.getElementById('map');
+    const mapSize = map.getSize();
+    
+    // 간단한 스크린샷: 지도 영역을 canvas로 변환
+    import('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js').then(html2canvas=>{
+      html2canvas.default(mapElement, {
+        useCORS: true,
+        allowTaint: true,
+        scale: 2,  // 고화질
+        width: mapSize.x,
+        height: mapSize.y
+      }).then(canvas => {
+        canvas.toBlob(blob => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `무양공원_현장조사_지도_${TODAY}.png`;
+          a.click();
+          URL.revokeObjectURL(url);
+          setBanner('📸 화면 캡처 완료');
+        });
+      });
+    }).catch(err=>{
+      console.error('캡처 실패:', err);
+      alert('화면 캡처 기능은 최신 브라우저에서만 지원됩니다.');
+    });
+  } catch(e) {
+    console.error(e);
+    alert('화면 캡처 중 오류가 발생했습니다.');
+  }
+}
 
 /* ── 대시보드 ── */
 function openDash(){renderDash();document.getElementById('dash-panel').classList.add('open');}
@@ -1122,9 +1303,30 @@ function buildData(){
 }
 
 function expCSV(){
-  const h=['거리','도로폭(m)','방위각','잔여폭(m)','소방차통행','교행가능','우측선유형','우측차량','우측대형','우측캠핑','우측적치물','좌측선유형','좌측차량','좌측대형','좌측캠핑','좌측적치물','혼잡도','시작시각','종료시각','메모'];
-  const r=roads.map(r=>[fmtLen(r.length),r.width||'',`${r.bearing||0}°(${bearingToText(r.bearing||0)}향)`,r.widthRemain||'',r.firetruck?'불가':'',r.crossable?'가능':'',LC[r.typeRight]?.label||r.typeRight||'',r.cars?.right||0,r.large?.right||0,r.camp?.right||0,(r.obstacles?.right||[]).join('|'),LC[r.typeLeft]?.label||r.typeLeft||'',r.cars?.left||0,r.large?.left||0,r.camp?.left||0,(r.obstacles?.left||[]).join('|'),r.congestion||'',r.startTime||'',r.endTime||'',r.memo||''].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(','));
-  dl('\uFEFF'+[h.join(','),...r].join('\n'),`무양공원_현장조사_${TODAY}.csv`,'text/csv');
+  // 라인 정보
+  const h1=['구분','거리','도로폭(m)','방위각','잔여폭(m)','소방차통행','교행가능','우측선유형','우측차량','우측대형','우측캠핑','우측적치물','좌측선유형','좌측차량','좌측대형','좌측캠핑','좌측적치물','혼잡도','시작시각','종료시각','메모'];
+  const r1=roads.map(r=>['라인',fmtLen(r.length),r.width||'',`${r.bearing||0}°(${bearingToText(r.bearing||0)}향)`,r.widthRemain||'',r.firetruck?'불가':'',r.crossable?'가능':'',LC[r.typeRight]?.label||r.typeRight||'',r.cars?.right||0,r.large?.right||0,r.camp?.right||0,(r.obstacles?.right||[]).join('|'),LC[r.typeLeft]?.label||r.typeLeft||'',r.cars?.left||0,r.large?.left||0,r.camp?.left||0,(r.obstacles?.left||[]).join('|'),r.congestion||'',r.startTime||'',r.endTime||'',r.memo||''].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(','));
+  
+  // 카운터 포인트 정보
+  const h2=['구분','차종/유형','위도','경도','방향','시각'];
+  const r2=cntPts.map(p=>{
+    const ll=p.mk.getLatLng();
+    const c=[...DC,...customCnts].find(c=>c.key===p.key);
+    const sideText=p.side==='left'?'좌측':p.side==='right'?'우측':'';
+    return['포인트',c?.lbl||p.key,ll.lat.toFixed(6),ll.lng.toFixed(6),sideText,p.time||''].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',');
+  });
+  
+  const csv=[
+    '■ 라인 정보',
+    h1.join(','),
+    ...r1,
+    '',
+    '■ 카운터 포인트',
+    h2.join(','),
+    ...r2
+  ].join('\n');
+  
+  dl('\uFEFF'+csv,`무양공원_현장조사_${TODAY}.csv`,'text/csv');
   closePop('pop-export');
 }
 function expJSON(){dl(JSON.stringify(buildData(),null,2),`무양공원_현장조사_${TODAY}.json`,'application/json');closePop('pop-export');}
@@ -1140,6 +1342,8 @@ function saveData(){
     widthRemain:r.widthRemain,firetruck:r.firetruck,crossable:r.crossable,
     congestion:r.congestion,memo:r.memo,startTime:r.startTime,endTime:r.endTime,
   }))));
+  // 카운터 값도 저장
+  localStorage.setItem('v10_counters',JSON.stringify(counters));
 }
 
 /* ── 유틸 ── */
@@ -1166,12 +1370,81 @@ function confirm2(title,msg,okLbl='확인',okCol='#dc2626'){
 }
 function cRes(v){document.getElementById('cdlg').classList.remove('open');if(_cRes){_cRes(v);_cRes=null;}}
 
+/* ── 사진 촬영 기능 ── */
+function takeFieldPhoto(){
+  const input = document.getElementById('camera-input');
+  input.onchange = function(e){
+    const file = e.target.files[0];
+    if(!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(evt){
+      pendingPhoto = {
+        data: evt.target.result,
+        time: nowStr(),
+        pos: currentPos ? [...currentPos] : null
+      };
+      openPop('pop-photo-side');
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+
+function saveFieldPhoto(side){
+  if(!pendingPhoto) return;
+  
+  const pos = pendingPhoto.pos || [35.2101, 126.8404];
+  const mk = L.marker(pos, {
+    icon: L.divIcon({
+      html: `<div style="width:24px;height:24px;background:#3b82f6;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;"><span style="font-size:14px;">📷</span></div>`,
+      className: '',
+      iconAnchor: [12, 12]
+    })
+  }).addTo(map);
+  
+  mk.bindTooltip(`📷 현장사진 ${side==='left'?'◀ 좌측':'우측 ▶'} · ${pendingPhoto.time}`, {permanent:false, direction:'top'});
+  
+  const photoData = {
+    mk: mk,
+    side: side,
+    time: pendingPhoto.time,
+    data: pendingPhoto.data,
+    pos: pos
+  };
+  
+  mk.on('click', ()=>{
+    document.getElementById('photo-view-img').src = photoData.data;
+    document.getElementById('photo-view-info').textContent = 
+      `${photoData.side==='left'?'◀ 좌측':'우측 ▶'} · ${photoData.time} · ${photoData.pos[0].toFixed(6)}, ${photoData.pos[1].toFixed(6)}`;
+    openPop('pop-photo-view');
+  });
+  
+  photoMarkers.push(photoData);
+  pendingPhoto = null;
+  closePop('pop-photo-side');
+  setBanner(`📷 현장 사진 저장됨 (${side==='left'?'좌측':'우측'})`);
+}
+
+function cancelFieldPhoto(){
+  pendingPhoto = null;
+  closePop('pop-photo-side');
+}
+
 // 칩 이벤트
 document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>c.classList.toggle('sel')));
 
 /* ── 복원 ── */
 (function(){
   roads.forEach(r=>addRoadToMap(r));
+  // 저장된 카운터 복원
+  const savedCounters = localStorage.getItem('v10_counters');
+  if(savedCounters){
+    try{
+      const restored = JSON.parse(savedCounters);
+      Object.assign(counters, restored);
+    }catch(e){console.error('카운터 복원 실패:',e);}
+  }
   initCnt();
   // 도로폭이 입력된 라인 중 마지막 라인을 활성 라인으로
   const withWidth=roads.filter(r=>r.width);
