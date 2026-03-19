@@ -3,133 +3,120 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>무양공원 현장조사 v10.2</title>
+<title>무양공원 주차밀도 조사 v11</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
-:root{--blue:#1a56db;--blue-lt:#e8f0fe;--green:#059669;--green-lt:#d1fae5;--red:#dc2626;--red-lt:#fee2e2;--amber:#d97706;--amber-lt:#fef3c7;--purple:#7c3aed;--purple-lt:#ede9fe;--teal:#0891b2;--teal-lt:#e0f2fe;--gray0:#f9fafb;--gray1:#f3f4f6;--gray2:#e5e7eb;--gray5:#6b7280;--gray7:#374151;--gray9:#111827;--r:12px;--rs:8px;}
+:root{--blue:#1a56db;--blue-lt:#eff6ff;--blue-bd:#93c5fd;--red:#dc2626;--red-lt:#fef2f2;--red-bd:#fca5a5;--green:#059669;--green-lt:#d1fae5;--green-bd:#6ee7b7;--amber:#d97706;--amber-lt:#fef3c7;--amber-bd:#fcd34d;--purple:#7c3aed;--purple-lt:#ede9fe;--purple-bd:#c4b5fd;--gray0:#f9fafb;--gray1:#f3f4f6;--gray2:#e5e7eb;--gray5:#6b7280;--gray7:#374151;--gray9:#111827;--r:12px;--rs:8px;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;font-family:-apple-system,'Apple SD Gothic Neo',sans-serif;color:var(--gray9);font-size:15px;}
 #app{display:flex;flex-direction:column;height:100dvh;max-width:520px;margin:0 auto;background:#fff;overflow:hidden;}
-#header{background:var(--blue);color:#fff;padding:8px 12px;flex-shrink:0;display:flex;align-items:center;gap:6px;}
-#header-text{flex:1;}
-#header h1{font-size:14px;font-weight:700;}
-#header p{font-size:10px;opacity:.8;margin-top:1px;}
-.hbtn{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:7px;padding:5px 8px;font-size:11px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
-#gps-badge{font-size:10px;padding:3px 7px;border-radius:20px;background:#1e3a5f;color:#60a5fa;border:1px solid #1d4ed8;white-space:nowrap;flex-shrink:0;}
+#header{background:var(--blue);color:#fff;padding:8px 12px;flex-shrink:0;display:flex;align-items:center;gap:8px;}
+#header h1{font-size:14px;font-weight:700;flex:1;}
+.hbtn{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;}
+#gps-badge{font-size:10px;padding:3px 8px;border-radius:20px;background:#1e3a5f;color:#60a5fa;border:1px solid #1d4ed8;white-space:nowrap;flex-shrink:0;}
 #gps-badge.ok{background:#14532d;color:#4ade80;border-color:#16a34a;}
 #gps-badge.calib{background:#713f12;color:#fcd34d;border-color:#d97706;}
-#map{flex:1;min-height:0;}
-#status-banner{flex-shrink:0;padding:5px 12px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:8px;background:var(--gray0);border-top:1px solid var(--gray2);border-bottom:1px solid var(--gray2);min-height:28px;}
-#banner-dot{width:8px;height:8px;border-radius:50%;background:var(--gray5);flex-shrink:0;}
-#banner-dot.draw{background:#7c3aed;animation:blink .6s infinite;}
-#banner-dot.rec{background:#dc2626;animation:blink 1s infinite;}
-#banner-dot.pin{background:#059669;animation:blink .8s infinite;}
+#map{flex:1;min-height:0;position:relative;}
+#status{flex-shrink:0;padding:5px 12px;font-size:11px;font-weight:600;color:var(--gray7);background:var(--gray0);border-top:1px solid var(--gray2);min-height:26px;display:flex;align-items:center;gap:6px;}
+#sdot{width:7px;height:7px;border-radius:50%;background:var(--gray5);flex-shrink:0;transition:background .3s;}
+#sdot.draw{background:var(--purple);animation:blink .6s infinite;}
+#sdot.ok{background:var(--green);}
+#sdot.calib{background:var(--amber);animation:blink .7s infinite;}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
-#banner-text{flex:1;color:var(--gray7);}
-#line-section{flex-shrink:0;background:#fff;border-bottom:1px solid var(--gray2);padding:5px 8px;}
-#line-label{font-size:10px;font-weight:600;color:var(--gray5);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;}
-.line-btn{width:100%;padding:10px;border-radius:var(--rs);border:2px solid #1d4ed8;cursor:pointer;text-align:center;font-size:13px;font-weight:700;background:#eff6ff;color:#1d4ed8;user-select:none;}
-.line-btn.draw{background:#ede9fe;border-color:#7c3aed;color:#7c3aed;}
-.line-btn.rec{background:#fecaca;border-color:#dc2626;color:#dc2626;animation:lbink .7s infinite;}
-@keyframes lbink{0%,100%{opacity:1}50%{opacity:.4}}
-#counter-section{flex-shrink:0;background:#fff;border-bottom:1px solid var(--gray2);}
-#cnt-label-row{display:flex;align-items:center;justify-content:space-between;padding:4px 10px 2px;}
-#cnt-label{font-size:10px;font-weight:600;color:var(--gray5);text-transform:uppercase;letter-spacing:.04em;}
-#cnt-actions{display:flex;gap:5px;}
-.ca{font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid var(--gray2);background:var(--gray0);cursor:pointer;color:var(--gray7);}
-#counter-grid{display:flex;flex-wrap:wrap;gap:4px;padding:3px 8px 6px;}
-.cnt-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:7px 4px 5px;border-radius:var(--rs);cursor:pointer;user-select:none;min-width:58px;flex:1;position:relative;border:2px solid;transition:transform .1s;}
-.cnt-btn:active{transform:scale(.92);}
-.cnt-icon{font-size:16px;line-height:1;}
-.cnt-lbl{font-size:9px;margin-top:2px;font-weight:600;opacity:.85;text-align:center;}
-.cnt-num{font-size:20px;font-weight:800;line-height:1.1;}
-.cnt-del{position:absolute;top:2px;left:3px;font-size:9px;opacity:.4;cursor:pointer;}
-.c-car{border-color:#1d4ed8;color:var(--blue);background:var(--blue-lt);}
-.c-large{border-color:#92400e;color:#92400e;background:var(--amber-lt);}
-.c-camp{border-color:#5b21b6;color:#5b21b6;background:var(--purple-lt);}
-.c-obs{border-color:#991b1b;color:#991b1b;background:var(--red-lt);}
-.c-custom{border-color:var(--gray5);color:var(--gray7);background:var(--gray1);}
-.cnt-btn.selected{transform:scale(1.04);box-shadow:0 0 0 3px rgba(29,78,216,.35);}
-#lr-row{display:grid;grid-template-columns:1fr auto 1fr;gap:5px;padding:4px 8px 6px;}
-.lr-btn{padding:8px 4px;border-radius:var(--rs);border:2px solid;cursor:pointer;text-align:center;font-size:12px;font-weight:700;line-height:1.4;user-select:none;transition:all .12s;}
-.lr-btn span{font-size:10px;font-weight:400;opacity:.7;display:block;}
-.lr-left{color:#1d4ed8;border-color:#93c5fd;background:#eff6ff;}
-.lr-right{color:#1d4ed8;border-color:#93c5fd;background:#eff6ff;}
-.lr-vacant{color:#065f46;border-color:#6ee7b7;background:#d1fae5;min-width:64px;}
-.lr-left.flash,.lr-right.flash{background:#1d4ed8;color:#fff;}
-.lr-vacant.pinmode{background:#059669;color:#fff;border-color:#047857;animation:lbink .7s infinite;}
-#bottom-bar{flex-shrink:0;background:#fff;border-top:1px solid var(--gray2);padding:6px 8px;display:flex;gap:5px;}
-.bb{flex:1;padding:9px 6px;font-size:11px;font-weight:700;border-radius:var(--rs);border:none;cursor:pointer;white-space:nowrap;}
-.bb:active{transform:scale(.97);}
-.bb-calib{background:#fef3c7;color:#92400e;border:1.5px solid #d97706;}
-.bb-calib.done{background:#d1fae5;color:#065f46;border-color:#059669;}
-.bb-save{background:var(--blue);color:#fff;}
-.pop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:3000;align-items:flex-end;justify-content:center;}
+#toolbar{flex-shrink:0;background:#fff;border-top:2px solid var(--gray2);padding:7px 8px;display:flex;gap:5px;}
+.tb{flex:1;padding:10px 4px;font-size:11px;font-weight:700;border-radius:var(--rs);border:2px solid transparent;cursor:pointer;white-space:nowrap;transition:all .15s;text-align:center;}
+.tb:active{transform:scale(.95);}
+.tb-draw{background:var(--blue-lt);color:var(--blue);border-color:var(--blue-bd);}
+.tb-draw.on{background:var(--purple-lt);color:var(--purple);border-color:var(--purple-bd);animation:pulse .8s infinite;}
+.tb-calib{background:var(--amber-lt);color:#92400e;border-color:var(--amber-bd);}
+.tb-calib.done{background:var(--green-lt);color:#065f46;border-color:var(--green-bd);}
+.tb-list{background:var(--gray1);color:var(--gray7);border-color:var(--gray2);}
+.tb-analyze{background:#fdf4ff;color:#6b21a8;border-color:#d8b4fe;}
+.tb-save{background:var(--green);color:#fff;border-color:var(--green);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+.pop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:3000;align-items:flex-end;justify-content:center;}
 .pop.open{display:flex;}
-.pbox{background:#fff;border-radius:18px 18px 0 0;padding:20px 18px 30px;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;}
-.ptitle{font-size:16px;font-weight:700;margin-bottom:12px;}
-.pauto{font-size:12px;background:var(--green-lt);color:#065f46;border-radius:8px;padding:8px 12px;margin-bottom:10px;font-weight:600;}
-.pnote{font-size:11px;color:var(--gray5);background:var(--gray0);border-radius:7px;padding:7px 10px;margin-bottom:10px;line-height:1.6;}
-.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
-.tbtn{padding:13px 8px;border-radius:var(--rs);border:2px solid;cursor:pointer;text-align:center;font-size:13px;font-weight:700;}
+.pbox{background:#fff;border-radius:20px 20px 0 0;padding:16px 16px 36px;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;}
+.phandle{width:36px;height:4px;border-radius:2px;background:var(--gray2);margin:0 auto 14px;}
+.ptitle{font-size:15px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;}
+.psec{font-size:10px;font-weight:700;color:var(--gray5);letter-spacing:.06em;text-transform:uppercase;margin:14px 0 7px;}
+.pf label{display:block;font-size:12px;font-weight:600;color:var(--gray7);margin-bottom:4px;}
+.pf input,.pf select{width:100%;padding:10px 12px;font-size:14px;border:1.5px solid var(--gray2);border-radius:var(--rs);background:#fff;-webkit-appearance:none;}
+.pf input:focus{outline:none;border-color:var(--blue);}
+.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:4px;}
+.tbtn{padding:11px 8px;border-radius:var(--rs);border:2px solid;cursor:pointer;text-align:center;font-size:12px;font-weight:700;line-height:1.4;transition:all .12s;}
+.tbtn:active{transform:scale(.96);}
 .tbtn.sel{border-width:3px;}
 .t-w{border-color:#9ca3af;color:#374151;background:#f9fafb;}.t-w.sel{background:#e5e7eb;}
 .t-y1{border-color:#ca8a04;color:#92400e;background:#fefce8;}.t-y1.sel{background:#fef08a;}
 .t-y2{border-color:#b45309;color:#7c2d12;background:#fef3c7;}.t-y2.sel{background:#fde68a;}
 .t-ob{border-color:#dc2626;color:#7f1d1d;background:#fef2f2;}.t-ob.sel{background:#fecaca;}
-.pf{margin-bottom:10px;}
-.pf label{display:block;font-size:12px;font-weight:600;color:var(--gray7);margin-bottom:3px;}
-.pf input,.pf select{width:100%;padding:9px 11px;font-size:13px;border:1.5px solid var(--gray2);border-radius:var(--rs);background:#fff;-webkit-appearance:none;}
-.pf input:focus,.pf select:focus{outline:none;border-color:var(--blue);}
-.pr2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.ci-box{background:#eff6ff;border:1px solid #93c5fd;border-radius:var(--rs);padding:9px 12px;margin-bottom:10px;}
-.ci-ttl{font-size:12px;font-weight:700;color:var(--blue);margin-bottom:5px;}
-.ci-vals{font-size:12px;color:var(--gray7);line-height:1.8;}
-.ci-btn{margin-top:6px;width:100%;padding:7px;background:var(--blue);color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;}
-.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:3px;}
-.chip{padding:5px 9px;border:1.5px solid var(--gray2);border-radius:20px;font-size:12px;cursor:pointer;user-select:none;color:var(--gray7);}
-.chip.sel{background:var(--blue-lt);border-color:var(--blue);color:var(--blue);font-weight:600;}
-.pbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
-.pb-c{padding:12px;background:var(--gray1);color:var(--gray7);border:none;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;}
-.pb-s{padding:12px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-size:13px;font-weight:700;cursor:pointer;}
-.side-tabs{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-bottom:10px;border:1.5px solid var(--gray2);border-radius:var(--rs);overflow:hidden;}
-.side-tab{padding:9px;text-align:center;font-size:12px;font-weight:700;cursor:pointer;background:var(--gray0);color:var(--gray5);border:none;}
-.side-tab.active{background:var(--blue);color:#fff;}
-.side-panel{display:none;}.side-panel.active{display:block;}
-.bearing-badge{display:flex;align-items:center;gap:6px;background:var(--blue-lt);border:1px solid #93c5fd;border-radius:var(--rs);padding:7px 10px;margin-bottom:10px;font-size:12px;color:#1e3a5f;}
-.width-result{border-radius:var(--rs);padding:8px 10px;margin-bottom:8px;font-size:12px;font-weight:600;}
-.width-ok{background:#d1fae5;color:#065f46;border:1px solid #6ee7b7;}
-.width-warn{background:#fef3c7;color:#92400e;border:1px solid #fcd34d;}
-.width-danger{background:#fef2f2;color:#991b1b;border:1px solid #fca5a5;}
-#list-panel,#dash-panel{display:none;position:absolute;inset:0;background:#fff;z-index:900;overflow-y:auto;}
-#list-panel.open,#dash-panel.open{display:block;}
-#dash-panel{background:#f8fafc;}
-.ph{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--gray2);padding:10px 14px;display:flex;align-items:center;gap:10px;z-index:10;}
-.ph h2{font-size:15px;font-weight:700;flex:1;}
-.pb{padding:12px;}
-.ls-ttl{font-size:11px;font-weight:700;color:var(--gray5);text-transform:uppercase;letter-spacing:.04em;margin:10px 0 6px;}
-.lcard{background:#fff;border:1px solid var(--gray2);border-radius:var(--r);padding:10px 12px;margin-bottom:7px;display:flex;align-items:center;gap:8px;}
-.lcolor{width:20px;height:4px;border-radius:2px;flex-shrink:0;}
+.ft-box{background:var(--red-lt);border:1.5px solid var(--red-bd);border-radius:var(--rs);padding:9px 12px;font-size:12px;font-weight:700;color:#991b1b;margin-bottom:10px;display:none;}
+.ft-box.show{display:block;}
+/* 카운터 바 */
+.cnt-bar{display:grid;grid-template-columns:1fr 1fr 1fr;border-radius:var(--rs);overflow:hidden;border:1.5px solid var(--gray2);height:58px;margin-bottom:7px;}
+.cnt-minus{background:var(--red-lt);border:none;font-size:34px;font-weight:300;color:var(--red);cursor:pointer;line-height:1;transition:background .1s;}
+.cnt-minus:active{background:#fecaca;}
+.cnt-mid{background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;border-left:1.5px solid var(--gray2);border-right:1.5px solid var(--gray2);gap:1px;position:relative;}
+.cnt-lbl{font-size:10px;color:var(--gray5);font-weight:600;}
+.cnt-val{font-size:24px;font-weight:700;color:var(--gray9);line-height:1;}
+.cnt-plus{background:var(--blue-lt);border:none;font-size:34px;font-weight:300;color:var(--blue);cursor:pointer;line-height:1;transition:background .1s;}
+.cnt-plus:active{background:#bfdbfe;}
+.cnt-x{position:absolute;top:3px;right:3px;width:16px;height:16px;border-radius:50%;background:var(--red-lt);border:1px solid var(--red-bd);color:var(--red);font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.cnt-add{width:100%;padding:12px;border-radius:var(--rs);border:2px dashed var(--gray2);background:transparent;font-size:12px;font-weight:600;color:var(--gray5);cursor:pointer;margin-bottom:4px;}
+.cnt-add:active{background:var(--gray1);}
+/* 사진 */
+.photo-card{border:1.5px solid var(--gray2);border-radius:var(--r);overflow:hidden;margin-bottom:8px;}
+.photo-card-top{display:flex;gap:10px;padding:10px;}
+.photo-thumb{width:64px;height:64px;flex-shrink:0;border-radius:var(--rs);background:var(--gray1);display:flex;align-items:center;justify-content:center;font-size:26px;border:1px solid var(--gray2);overflow:hidden;}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;}
+.photo-info{flex:1;min-width:0;}
+.photo-name{font-size:12px;font-weight:700;color:var(--gray9);margin-bottom:3px;}
+.photo-badge{display:inline-flex;align-items:center;font-size:10px;padding:2px 7px;border-radius:12px;font-weight:600;margin-bottom:4px;}
+.badge-gps{background:var(--amber-lt);color:#92400e;border:1px solid var(--amber-bd);}
+.badge-ok{background:var(--green-lt);color:#065f46;border:1px solid var(--green-bd);}
+.photo-coord{font-size:10px;color:var(--gray5);}
+.photo-del{align-self:flex-start;width:28px;height:28px;border-radius:50%;border:1px solid var(--red-bd);background:var(--red-lt);color:var(--red);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.photo-footer{border-top:1px solid var(--gray2);padding:8px 10px;display:flex;align-items:center;justify-content:space-between;}
+.photo-footer.warn{background:var(--amber-lt);}
+.photo-footer.ok{background:var(--green-lt);}
+.photo-hint{font-size:11px;}
+.photo-hint.warn{color:#92400e;}.photo-hint.ok{color:#065f46;}
+.photo-calib-btn{padding:5px 11px;border-radius:6px;border:1px solid;font-size:11px;font-weight:600;cursor:pointer;background:#fff;}
+.photo-calib-btn.warn{border-color:var(--amber-bd);color:#92400e;}
+.photo-calib-btn.ok{border-color:var(--green-bd);color:#065f46;}
+#calib-banner{display:none;position:absolute;top:10px;left:50%;transform:translateX(-50%);z-index:1000;background:#1d4ed8;color:#fff;border-radius:20px;padding:8px 18px;font-size:12px;font-weight:700;white-space:nowrap;box-shadow:0 2px 12px rgba(0,0,0,.3);cursor:pointer;}
+#calib-banner.show{display:block;}
+.pbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;}
+.pb-c{padding:13px;background:var(--gray1);color:var(--gray7);border:none;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;}
+.pb-s{padding:13px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-size:13px;font-weight:700;cursor:pointer;}
+.pb-del{padding:7px 12px;background:var(--red-lt);color:var(--red);border:1.5px solid var(--red-bd);border-radius:var(--rs);font-size:12px;font-weight:600;cursor:pointer;}
+#list-panel{display:none;position:fixed;inset:0;background:#fff;z-index:2000;overflow-y:auto;}
+#list-panel.open{display:block;}
+.lph{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--gray2);padding:10px 14px;display:flex;align-items:center;gap:10px;z-index:10;}
+.lph h2{font-size:15px;font-weight:700;flex:1;}
+.lcard{border:1px solid var(--gray2);border-radius:var(--r);padding:11px 13px;margin:0 12px 8px;display:flex;align-items:center;gap:10px;cursor:pointer;}
+.lcard:active{background:var(--gray0);}
+.lnum{width:28px;height:28px;border-radius:50%;background:var(--blue-lt);color:var(--blue);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .linfo{flex:1;}
-.lname{font-size:13px;font-weight:600;}
+.lname{font-size:13px;font-weight:700;}
 .ldetail{font-size:11px;color:var(--gray5);margin-top:2px;line-height:1.5;}
-.ldel{font-size:11px;color:var(--red);cursor:pointer;padding:3px 7px;border:1px solid #fecaca;border-radius:5px;flex-shrink:0;}
-.empty{text-align:center;padding:40px 0;color:var(--gray5);font-size:13px;}
-.dash-ph{position:sticky;top:0;background:#1e3a5f;padding:10px 14px;display:flex;align-items:center;gap:10px;z-index:10;}
-.dash-ph h2{font-size:15px;font-weight:700;color:#fff;flex:1;}
-.dash-pb{padding:12px;}
-.dash-section{background:#fff;border-radius:var(--r);border:1px solid var(--gray2);padding:14px;margin-bottom:10px;}
-.dash-ttl{font-size:12px;font-weight:700;color:var(--gray5);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;}
-.econ-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--gray1);font-size:13px;}
-.econ-row:last-child{border:none;}
-.econ-lbl{color:var(--gray7);}.econ-val{font-weight:700;color:var(--blue);}
-.econ-highlight{background:var(--blue-lt);border-radius:8px;padding:10px;margin-top:8px;text-align:center;}
-.econ-highlight .lbl{font-size:11px;color:var(--blue);font-weight:600;}
-.econ-highlight .val{font-size:20px;font-weight:800;color:#1d4ed8;margin-top:2px;line-height:1.3;}
-.gps-qual-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;}
-.gps-ok{background:#d1fae5;color:#065f46;}.gps-warn{background:#fef3c7;color:#92400e;}
-#cdlg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:5000;align-items:center;justify-content:center;padding:20px;}
+.ldel{font-size:11px;color:var(--red);cursor:pointer;padding:4px 9px;border:1px solid var(--red-bd);border-radius:6px;flex-shrink:0;}
+.empty{text-align:center;padding:48px 0;color:var(--gray5);font-size:13px;}
+#analyze-panel{display:none;position:fixed;inset:0;background:#fff;z-index:2000;overflow-y:auto;}
+#analyze-panel.open{display:block;}
+.aph{position:sticky;top:0;background:#1a56db;padding:10px 14px;display:flex;align-items:center;gap:10px;z-index:10;}
+.aph h2{font-size:15px;font-weight:700;color:#fff;flex:1;}
+.apb{padding:14px;}
+.density-card{border-radius:var(--rs);padding:11px 13px;margin-bottom:7px;display:flex;align-items:center;gap:10px;border:1.5px solid transparent;cursor:pointer;}
+.dc-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+.dc-info{flex:1;}
+.dc-name{font-size:13px;font-weight:700;}
+.dc-detail{font-size:11px;margin-top:2px;}
+.dc-density{font-size:18px;font-weight:800;white-space:nowrap;}
+.exp-btn{width:100%;padding:13px;margin-bottom:8px;border:none;border-radius:var(--rs);font-size:14px;font-weight:700;cursor:pointer;}
+#cdlg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:6000;align-items:center;justify-content:center;padding:20px;}
 #cdlg.open{display:flex;}
 .cbox{background:#fff;border-radius:16px;padding:22px 20px;width:100%;max-width:320px;}
 .cttl{font-size:15px;font-weight:700;margin-bottom:8px;}
@@ -137,1295 +124,602 @@ html,body{height:100%;font-family:-apple-system,'Apple SD Gothic Neo',sans-serif
 .cbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
 .cc{padding:11px;background:var(--gray1);border:none;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;}
 .co{padding:11px;color:#fff;border:none;border-radius:var(--rs);font-size:13px;font-weight:700;cursor:pointer;}
+.road-label{background:#1d4ed8;color:#fff;font-size:11px;font-weight:700;padding:2px 6px;border-radius:4px;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.3);}
 </style>
 </head>
 <body>
 <div id="app">
   <div id="header">
-    <div id="header-text">
-      <h1>무양공원 현장조사 v10.2</h1>
-      <p id="calib-info">GPS 보정 없음 — [위치 보정] 버튼을 탭하세요</p>
-    </div>
-    <button class="hbtn" id="map-toggle-btn" onclick="cycleMap()">🛰 위성</button>
+    <h1>무양공원 주차밀도 조사 v11</h1>
+    <button class="hbtn" onclick="cycleMap()" id="map-btn">🛰 위성</button>
     <div id="gps-badge">GPS 연결중</div>
   </div>
-  <div id="map"></div>
-  <div id="status-banner">
-    <div id="banner-dot"></div>
-    <div id="banner-text">✏️ 라인 그리기로 기준선을 먼저 그으세요</div>
+  <div id="map">
+    <div id="calib-banner">📍 지도를 탭해 사진 위치를 지정하세요 — 취소는 여기 탭</div>
   </div>
-  <div id="line-section">
-    <div id="line-label">구간 라인 <span id="line-hint" style="font-weight:400;font-size:10px;color:var(--gray5);">탭=속성편집 · 길게누르기=삭제</span></div>
-    <div class="line-btn" id="lb-main" onclick="toggleLineDraw()">✏️ 라인 그리기</div>
-  </div>
-  <div id="counter-section">
-    <div id="cnt-label-row">
-      <span id="cnt-label">차종 선택 → 좌/우 탭</span>
-      <div id="cnt-actions">
-        <button class="ca" style="background:#dbeafe;color:#1d4ed8;border-color:#93c5fd;" onclick="takeFieldPhoto()">📷 현장촬영</button>
-        <button class="ca" onclick="openAddCnt()">+ 추가</button>
-        <button class="ca" onclick="resetCntPts()">📍 탭 삭제</button>
-        <button class="ca" onclick="resetCnt()">🔄 초기화</button>
-      </div>
-    </div>
-    <div id="counter-grid">
-      <div class="cnt-btn c-car"   id="cb-car"   onclick="selVehicle('car')"  ><div class="cnt-icon">🚗</div><div class="cnt-lbl">일반차량</div><div class="cnt-num" id="cnt-car">0</div></div>
-      <div class="cnt-btn c-large" id="cb-large" onclick="selVehicle('large')"><div class="cnt-icon">🚛</div><div class="cnt-lbl">대형차</div><div class="cnt-num" id="cnt-large">0</div></div>
-      <div class="cnt-btn c-camp"  id="cb-camp"  onclick="selVehicle('camp')" ><div class="cnt-icon">🚐</div><div class="cnt-lbl">캠핑카</div><div class="cnt-num" id="cnt-camp">0</div></div>
-      <div class="cnt-btn c-obs"   id="cb-obs"   onclick="selVehicle('obs')"  ><div class="cnt-icon">🚫</div><div class="cnt-lbl">적치물</div><div class="cnt-num" id="cnt-obs">0</div></div>
-    </div>
-    <div id="lr-row">
-      <button class="lr-btn lr-left"  id="lr-left"  onclick="doCntSide('left')" >◀ 좌측<br><span id="lr-left-hint"></span></button>
-      <button class="lr-btn lr-vacant" id="lr-vacant" onclick="toggleVacantPin()">🟩 유휴지<br><span id="cnt-vacant">0</span></button>
-      <button class="lr-btn lr-right" id="lr-right" onclick="doCntSide('right')">우측 ▶<br><span id="lr-right-hint"></span></button>
-    </div>
-    <div id="counter-grid-custom"></div>
-  </div>
-  <div id="bottom-bar">
-    <button class="bb bb-calib" id="bb-calib" onclick="calibrate()">📍 위치 보정</button>
-    <button class="bb" style="background:var(--gray1);color:var(--gray7);" onclick="openList()">📋 목록</button>
-    <button class="bb" style="background:var(--teal-lt);color:var(--teal);border:1.5px solid var(--teal);" onclick="openDash()">📊</button>
-    <button class="bb" style="background:#fee2e2;color:#991b1b;border:1.5px solid #fca5a5;" onclick="resetAll()">🗑</button>
-    <button class="bb bb-save" onclick="openExport()">💾 저장</button>
-  </div>
-  <div id="list-panel">
-    <div class="ph"><button class="pb-c" style="flex:none;padding:5px 10px;" onclick="closeList()">← 뒤로</button><h2>저장 목록</h2></div>
-    <div class="pb" id="list-body"></div>
-  </div>
-  <div id="dash-panel">
-    <div class="dash-ph">
-      <button class="pb-c" style="flex:none;padding:5px 10px;background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);" onclick="closeDash()">← 뒤로</button>
-      <h2>📊 분석</h2>
-      <button style="background:#1d4ed8;color:#fff;border:none;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;" onclick="renderDash()">새로고침</button>
-    </div>
-    <div class="dash-pb" id="dash-body"></div>
+  <div id="status"><div id="sdot"></div><span id="stxt">✏️ 라인 버튼으로 도로 구간을 그으세요</span></div>
+  <div id="toolbar">
+    <button class="tb tb-draw" id="tb-draw" onclick="toggleDraw()">✏️ 라인</button>
+    <button class="tb tb-calib" id="tb-calib" onclick="doCalib()">📍 보정</button>
+    <button class="tb tb-list" onclick="openList()">📋 목록</button>
+    <button class="tb tb-analyze" onclick="openAnalyze()">📊 분석</button>
+    <button class="tb tb-save" onclick="openExport()">💾 저장</button>
   </div>
 </div>
 
-<!-- 라인 속성 팝업 (완성된 라인 탭 시) -->
+<!-- 라인 속성 팝업 -->
 <div class="pop" id="pop-line">
   <div class="pbox">
-    <div class="ptitle" id="lp-title">라인 속성</div>
-    <div class="pauto" id="lp-auto"></div>
-    <div class="bearing-badge"><span id="lp-arr" style="font-size:18px;transition:transform .3s;">↑</span><span id="lp-bearing-text">방향 계산 중...</span></div>
-
-    <!-- 도로폭 -->
-    <div class="pf" style="margin-bottom:10px;">
-      <label>주차 후 잔여 도로폭 (m) <span style="font-weight:400;font-size:11px;color:var(--gray5);">— 현장 측정 필수</span></label>
-      <input type="number" id="lp-remain" placeholder="예: 3.2" min="0" step="0.5" oninput="calcRemain()"/>
+    <div class="phandle"></div>
+    <div class="ptitle">
+      <span id="lp-title">라인 속성</span>
+      <button class="pb-del" onclick="deleteCurrentRoad()">🗑 삭제</button>
     </div>
-    <div id="lp-remain-result" style="display:none;" class="width-result"></div>
-    <input type="hidden" id="lp-width" value="7"/>
-
-    <!-- 좌우 선종류 -->
-    <div class="side-tabs">
-      <button class="side-tab active" id="lp-tab-r" onclick="lpSide('right')">▶ 우측 선종류</button>
-      <button class="side-tab"        id="lp-tab-l" onclick="lpSide('left')">◀ 좌측 선종류</button>
+    <div style="background:var(--green-lt);border:1px solid var(--green-bd);border-radius:var(--rs);padding:9px 12px;font-size:12px;font-weight:600;color:#065f46;margin-bottom:12px;" id="lp-auto"></div>
+    <div class="psec">도로 정보</div>
+    <div class="pf" style="margin-bottom:8px;">
+      <label>주차 후 잔여 도로폭 (m)</label>
+      <input type="number" id="lp-remain" placeholder="예: 3.5" min="0" step="0.5" oninput="checkFT()">
     </div>
-    <div class="side-panel active" id="lp-panel-r">
-      <div class="tgrid">
-        <div class="tbtn t-w"  id="lr-w"  onclick="lpSelT('white','right')">— 흰색 실선<br><small style="font-weight:400;font-size:11px;">주정차 허용</small></div>
-        <div class="tbtn t-y1" id="lr-y1" onclick="lpSelT('yellow1','right')">— 황색 단선<br><small style="font-weight:400;font-size:11px;">주정차 금지</small></div>
-        <div class="tbtn t-y2" id="lr-y2" onclick="lpSelT('yellow2','right')">= 황색 복선<br><small style="font-weight:400;font-size:11px;">스쿨존</small></div>
-        <div class="tbtn t-ob" id="lr-ob" onclick="lpSelT('obstacle','right')">🚫 적치물<br><small style="font-weight:400;font-size:11px;">상점 점용</small></div>
-      </div>
-      <div class="pr2">
-        <div class="pf"><label>일반차량</label><input type="number" id="lp-cars-r" placeholder="0" min="0"/></div>
-        <div class="pf"><label>대형차</label><input type="number" id="lp-large-r" placeholder="0" min="0"/></div>
-      </div>
-      <div class="pf"><label>캠핑카</label><input type="number" id="lp-camp-r" placeholder="0" min="0"/></div>
-      <div class="pf" id="lp-obs-r-wrap" style="display:none;"><label>적치물 종류</label>
-        <div class="chips" id="chips-obs-r"><div class="chip" data-val="콘">콘</div><div class="chip" data-val="화분">화분</div><div class="chip" data-val="의자">의자</div><div class="chip" data-val="벽돌·블록">벽돌·블록</div><div class="chip" data-val="기타">기타</div></div>
-      </div>
+    <div class="ft-box" id="ft-box">🚒 소방차 통행 불가 (잔여폭 4m 미만)</div>
+    <div class="psec">선 종류</div>
+    <div class="tgrid">
+      <div class="tbtn t-w"  id="lt-w"  onclick="selType('white')">— 흰색 실선<br><small style="font-weight:400;font-size:10px;">주정차 허용</small></div>
+      <div class="tbtn t-y1" id="lt-y1" onclick="selType('yellow1')">— 황색 단선<br><small style="font-weight:400;font-size:10px;">주정차 금지</small></div>
+      <div class="tbtn t-y2" id="lt-y2" onclick="selType('yellow2')">= 황색 복선<br><small style="font-weight:400;font-size:10px;">스쿨존</small></div>
+      <div class="tbtn t-ob" id="lt-ob" onclick="selType('obstacle')">🚫 적치물<br><small style="font-weight:400;font-size:10px;">상점 점용</small></div>
     </div>
-    <div class="side-panel" id="lp-panel-l">
-      <div class="tgrid">
-        <div class="tbtn t-w"  id="ll-w"  onclick="lpSelT('white','left')">— 흰색 실선<br><small style="font-weight:400;font-size:11px;">주정차 허용</small></div>
-        <div class="tbtn t-y1" id="ll-y1" onclick="lpSelT('yellow1','left')">— 황색 단선<br><small style="font-weight:400;font-size:11px;">주정차 금지</small></div>
-        <div class="tbtn t-y2" id="ll-y2" onclick="lpSelT('yellow2','left')">= 황색 복선<br><small style="font-weight:400;font-size:11px;">스쿨존</small></div>
-        <div class="tbtn t-ob" id="ll-ob" onclick="lpSelT('obstacle','left')">🚫 적치물<br><small style="font-weight:400;font-size:11px;">상점 점용</small></div>
-      </div>
-      <div class="pr2">
-        <div class="pf"><label>일반차량</label><input type="number" id="lp-cars-l" placeholder="0" min="0"/></div>
-        <div class="pf"><label>대형차</label><input type="number" id="lp-large-l" placeholder="0" min="0"/></div>
-      </div>
-      <div class="pf"><label>캠핑카</label><input type="number" id="lp-camp-l" placeholder="0" min="0"/></div>
-      <div class="pf" id="lp-obs-l-wrap" style="display:none;"><label>적치물 종류</label>
-        <div class="chips" id="chips-obs-l"><div class="chip" data-val="콘">콘</div><div class="chip" data-val="화분">화분</div><div class="chip" data-val="의자">의자</div><div class="chip" data-val="벽돌·블록">벽돌·블록</div><div class="chip" data-val="기타">기타</div></div>
-      </div>
-    </div>
-
-    <!-- 카운터 가져오기 -->
-    <div id="lp-ci" style="display:none;">
-      <div class="ci-box"><div class="ci-ttl">🔢 카운터 값 가져오기</div><div class="ci-vals" id="lp-ci-vals"></div><button class="ci-btn" onclick="lpImportCnt()">이 값으로 입력</button></div>
-    </div>
-
-    <div class="pf"><label>혼잡도</label>
-      <select id="lp-cong"><option value="">선택 안 함</option><option>여유</option><option>보통</option><option>혼잡</option><option>매우혼잡</option></select>
-    </div>
-    <div class="pf"><label>메모</label><input type="text" id="lp-memo" placeholder="특이사항"/></div>
-    
-    <button style="width:100%;padding:10px;margin:10px 0 0 0;background:#fee2e2;color:#991b1b;border:1.5px solid #fca5a5;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;" onclick="deleteCurrentLine()">🗑 이 라인 삭제</button>
-    
+    <div class="psec">차량 대수</div>
+    <div id="cnt-bars"></div>
+    <button class="cnt-add" onclick="openAddCnt()">+ 카운터 추가</button>
+    <div class="psec">현장 사진</div>
+    <div id="photo-list"></div>
+    <button style="width:100%;padding:11px;border-radius:var(--rs);border:1.5px solid var(--gray2);background:#fff;font-size:13px;font-weight:600;color:var(--gray7);cursor:pointer;margin-bottom:4px;" onclick="takePhoto()">📷 사진 촬영 (GPS 위치 자동 저장)</button>
+    <div class="psec">메모</div>
+    <div class="pf" style="margin-bottom:4px;"><input type="text" id="lp-memo" placeholder="특이사항"></div>
     <div class="pbtns">
-      <button class="pb-c" onclick="closePop('pop-line')">닫기</button>
-      <button class="pb-s" onclick="saveLine()">저장</button>
+      <button class="pb-c" onclick="cancelLineProp()">취소</button>
+      <button class="pb-s" onclick="saveLineProp()">저장</button>
     </div>
   </div>
 </div>
 
-<!-- 커스텀 카운터 추가 -->
+<!-- 커스텀 카운터 추가 팝업 -->
 <div class="pop" id="pop-addcnt">
-  <div class="pbox" style="max-height:280px;">
+  <div class="pbox">
+    <div class="phandle"></div>
     <div class="ptitle">카운터 추가</div>
-    <div class="pf"><label>이름</label><input type="text" id="ac-name" placeholder="예: 오토바이"/></div>
-    <div class="pf"><label>이모지 (선택)</label><input type="text" id="ac-icon" placeholder="예: 🛵"/></div>
-    <div class="pbtns"><button class="pb-c" onclick="closePop('pop-addcnt')">취소</button><button class="pb-s" onclick="addCnt()">추가</button></div>
-  </div>
-</div>
-
-<!-- 내보내기 -->
-<div class="pop" id="pop-export">
-  <div class="pbox" style="max-height:80vh;">
-    <div class="ptitle">💾 데이터 내보내기</div>
-    <div id="exp-summary" style="font-size:12px;color:var(--gray5);background:var(--gray0);border-radius:8px;padding:10px;margin-bottom:14px;line-height:1.8;"></div>
-    <button style="width:100%;padding:13px;margin-bottom:8px;background:#7c3aed;color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:700;cursor:pointer;" onclick="captureMap()">📸 화면 캡처 (PNG)</button>
-    <button style="width:100%;padding:13px;margin-bottom:8px;background:var(--green);color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:700;cursor:pointer;" onclick="expCSV()">CSV 다운로드 (엑셀)</button>
-    <button style="width:100%;padding:13px;margin-bottom:8px;background:var(--blue);color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:700;cursor:pointer;" onclick="expJSON()">JSON 다운로드 (AI 분석)</button>
-    <button style="width:100%;padding:13px;margin-bottom:8px;background:var(--gray1);color:var(--gray7);border:none;border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer;" onclick="expClip()">클립보드 복사</button>
-    <button class="pb-c" style="width:100%;padding:11px;" onclick="closePop('pop-export')">닫기</button>
-  </div>
-</div>
-
-<!-- 라인 취소 확인 -->
-<div class="pop" id="pop-cancel" onclick="closePop('pop-cancel')">
-  <div class="pbox" onclick="event.stopPropagation()" style="max-height:220px;">
-    <div class="ptitle">라인 그리기 취소</div>
-    <div class="pnote" style="margin-bottom:16px;">현재 그리고 있는 라인을 취소할까요?</div>
+    <div class="pf"><label>이름</label><input type="text" id="ac-name" placeholder="예: 오토바이"></div>
+    <div class="pf"><label>이모지</label><input type="text" id="ac-icon" placeholder="예: 🛵"></div>
     <div class="pbtns">
-      <button class="pb-c" onclick="closePop('pop-cancel')">계속 그리기</button>
-      <button class="pb-s" style="background:#dc2626;" onclick="cancelLineDraw();closePop('pop-cancel')">취소 확인</button>
+      <button class="pb-c" onclick="closePop('pop-addcnt')">취소</button>
+      <button class="pb-s" onclick="confirmAddCnt()">추가</button>
     </div>
   </div>
 </div>
 
-<!-- 사진 위치 선택 -->
-<div class="pop" id="pop-photo-side">
-  <div class="pbox" style="max-height:300px;">
-    <div class="ptitle">📷 사진 위치 선택</div>
-    <div class="pnote">촬영한 사진이 도로의 어느 쪽에 있나요?</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;">
-      <button style="padding:16px;background:#eff6ff;color:#1d4ed8;border:2px solid #93c5fd;border-radius:var(--rs);font-size:15px;font-weight:700;cursor:pointer;" onclick="saveFieldPhoto('left')">◀ 좌측</button>
-      <button style="padding:16px;background:#eff6ff;color:#1d4ed8;border:2px solid #93c5fd;border-radius:var(--rs);font-size:15px;font-weight:700;cursor:pointer;" onclick="saveFieldPhoto('right')">우측 ▶</button>
-    </div>
-    <button class="pb-c" style="width:100%;margin-top:10px;" onclick="cancelFieldPhoto()">취소</button>
+<!-- 내보내기 팝업 -->
+<div class="pop" id="pop-export">
+  <div class="pbox">
+    <div class="phandle"></div>
+    <div class="ptitle">데이터 저장</div>
+    <div id="exp-summary" style="font-size:12px;color:var(--gray5);background:var(--gray0);border-radius:var(--rs);padding:10px;margin-bottom:14px;line-height:1.9;"></div>
+    <button class="exp-btn" style="background:var(--green);color:#fff;" onclick="expCSV()">CSV 다운로드 (엑셀)</button>
+    <button class="exp-btn" style="background:var(--blue);color:#fff;" onclick="expJSON()">JSON 다운로드 (AI 분석)</button>
+    <button class="exp-btn" style="background:var(--gray1);color:var(--gray7);" onclick="expClip()">클립보드 복사</button>
+    <button class="exp-btn" style="background:var(--gray1);color:var(--gray7);" onclick="closePop('pop-export')">닫기</button>
   </div>
 </div>
 
-<!-- 사진 보기 -->
-<div class="pop" id="pop-photo-view">
-  <div class="pbox" style="max-height:90vh;padding:10px;">
-    <button class="pb-c" style="margin-bottom:10px;" onclick="closePop('pop-photo-view')">← 닫기</button>
-    <img id="photo-view-img" style="width:100%;border-radius:var(--rs);" />
-    <div id="photo-view-info" style="margin-top:10px;font-size:12px;color:var(--gray5);"></div>
+<!-- 목록 패널 -->
+<div id="list-panel">
+  <div class="lph">
+    <button class="pb-c" style="flex:none;padding:5px 12px;" onclick="closeList()">← 뒤로</button>
+    <h2>라인 목록</h2>
   </div>
+  <div style="padding:12px 0;" id="list-body"></div>
 </div>
 
-<!-- 숨겨진 카메라 인풋 -->
-<input type="file" id="camera-input" accept="image/*" capture="environment" style="display:none" />
+<!-- 분석 패널 -->
+<div id="analyze-panel">
+  <div class="aph">
+    <button style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:7px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;flex:none;" onclick="closeAnalyze()">← 뒤로</button>
+    <h2>주차밀도 분석</h2>
+  </div>
+  <div class="apb" id="analyze-body"></div>
+</div>
 
 <!-- 확인 다이얼로그 -->
-<div id="cdlg"><div class="cbox"><div class="cttl" id="c-title"></div><div class="cmsg" id="c-msg"></div><div class="cbtns"><button class="cc" onclick="cRes(false)">아니오</button><button class="co" id="c-ok" onclick="cRes(true)">확인</button></div></div></div>
+<div id="cdlg">
+  <div class="cbox">
+    <div class="cttl" id="c-title">확인</div>
+    <div class="cmsg" id="c-msg"></div>
+    <div class="cbtns">
+      <button class="cc" onclick="cRes(false)">아니오</button>
+      <button class="co" id="c-ok" onclick="cRes(true)">확인</button>
+    </div>
+  </div>
+</div>
 
 <script>
-/* ── 상수 ── */
-const LC = {
-  white:   {color:'#9ca3af', weight:4, dash:'8,4',  label:'흰색 실선'},
-  yellow1: {color:'#ca8a04', weight:4, dash:'',      label:'황색 단선'},
-  yellow2: {color:'#b45309', weight:5, dash:'3,4',   label:'황색 복선(스쿨존)'},
-  obstacle:{color:'#dc2626', weight:5, dash:'',      label:'적치물 구간'},
-};
-const DC = [
-  {key:'car',  icon:'🚗', lbl:'일반차량', cls:'c-car'},
-  {key:'large',icon:'🚛', lbl:'대형차',   cls:'c-large'},
-  {key:'camp', icon:'🚐', lbl:'캠핑카',   cls:'c-camp'},
-  {key:'obs',  icon:'🚫', lbl:'적치물',   cls:'c-obs'},
-];
-const DC_SIDES = ['car','large','camp','obs'];
-const TODAY = new Date().toISOString().split('T')[0];
+const LC={white:{color:'#9ca3af',weight:5,dash:'8,4',label:'흰색 실선'},yellow1:{color:'#ca8a04',weight:5,dash:'',label:'황색 단선'},yellow2:{color:'#b45309',weight:6,dash:'3,4',label:'황색 복선(스쿨존)'},obstacle:{color:'#dc2626',weight:6,dash:'',label:'적치물 구간'}};
+const BASE_CNTS=[{key:'car',icon:'🚗',lbl:'일반차량'},{key:'obs',icon:'🚫',lbl:'적치물'},{key:'large',icon:'🚛',lbl:'대형차'},{key:'camp',icon:'🚐',lbl:'캠핑카'}];
+const TODAY=new Date().toISOString().split('T')[0];
+let roads=JSON.parse(localStorage.getItem('v11_roads')||'[]');
+let customCnts=JSON.parse(localStorage.getItem('v11_cst')||'[]');
+let mapLayers={};
+let currentPos=null,rawPos=null,calibOffset=null;
+let locMk=null,locCir=null;
+let drawMode=false,drawPts=[],drawMks=[],drawLine=null,drawDblTmr=null;
+let editId=null,lpType=null,lpCnts={},lpPhotos=[];
+let calibPhotoId=null;
 
-/* ── 데이터 ── */
-let roads      = JSON.parse(localStorage.getItem('v10_roads') || '[]');
-let customCnts = JSON.parse(localStorage.getItem('v10_cst')   || '[]');
-let mapLayers  = {};   // road_id → {center, edgeR, edgeL, startMk, endMk}
-let counters   = {};
-let cntPts     = [];
-let selectedVehicle = 'car';
-let vacantPinMode   = false;
-let currentPos = null, rawPos = null, calibOffset = null;
-let locMk = null, locCir = null;
-let activeRoadId = null;  // 현재 GPS 스냅 기준 라인
-
-/* 라인 그리기 상태 */
-let drawMode    = false;
-let drawPoints  = [];
-let drawTmpMks  = [];
-let drawTmpLine = null;
-let drawPreview = null;
-let drawDblTimer = null;
-
-/* 라인 속성 팝업 상태 */
-let editingRoadId  = null;
-let lpTypeRight    = null;
-let lpTypeLeft     = null;
-let lpCurrentSide  = 'right';
-
-/* 사진 촬영 상태 */
-let pendingPhoto   = null;  // 촬영된 사진 임시 저장
-let photoMarkers   = [];    // 사진 마커 목록
-
-/* ── 지도 초기화 (v9 방식 — 즉시 타일 추가) ── */
-const map = L.map('map', {zoomControl:true, doubleClickZoom:false}).setView([35.2101,126.8404],17);
-
-const TILES = [
-  {lbl:'🗺 일반',url:'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',opt:{attribution:'© CARTO',subdomains:'abcd',maxZoom:19}},
+/* 지도 */
+const map=L.map('map',{zoomControl:true,doubleClickZoom:false}).setView([35.2101,126.8404],17);
+const TILES=[
   {lbl:'🛰 위성',url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',opt:{attribution:'© Esri',maxZoom:19}},
+  {lbl:'🗺 일반',url:'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',opt:{attribution:'© CARTO',subdomains:'abcd',maxZoom:19}},
 ];
-
-/* v9 방식: 즉시 타일 추가 */
-let tIdx=0, tile=L.tileLayer(TILES[0].url,TILES[0].opt).addTo(map), overlay=null;
-document.getElementById('map-toggle-btn').textContent=TILES[(tIdx+1)%TILES.length].lbl;
+let tIdx=0,tile=L.tileLayer(TILES[1].url,TILES[1].opt).addTo(map);
+document.getElementById('map-btn').textContent=TILES[0].lbl;
 
 function cycleMap(){
-  map.removeLayer(tile);
-  if(overlay){map.removeLayer(overlay);overlay=null;}
-  tIdx=(tIdx+1)%TILES.length;
-  const t=TILES[tIdx];
-  tile=L.tileLayer(t.url,t.opt).addTo(map);
-  if(t.overlay) overlay=L.tileLayer(t.overlay,{attribution:'© 브이월드',maxZoom:19,opacity:0.9}).addTo(map);
-  document.getElementById('map-toggle-btn').textContent=TILES[(tIdx+1)%TILES.length].lbl;
+  map.removeLayer(tile);tIdx=(tIdx+1)%TILES.length;
+  tile=L.tileLayer(TILES[tIdx].url,TILES[tIdx].opt).addTo(map);
+  document.getElementById('map-btn').textContent=TILES[(tIdx+1)%TILES.length].lbl;
 }
 
-/* ── GPS ── */
+/* GPS */
 (function(){
-  if(!navigator.geolocation) return;
-  navigator.geolocation.getCurrentPosition(p=>{
-    map.setView([p.coords.latitude,p.coords.longitude],17);
-  },()=>{},{enableHighAccuracy:true,timeout:8000});
+  if(!navigator.geolocation)return;
+  navigator.geolocation.getCurrentPosition(p=>{map.setView([p.coords.latitude,p.coords.longitude],17);},()=>{},{enableHighAccuracy:true,timeout:8000});
   navigator.geolocation.watchPosition(p=>{
-    rawPos = [p.coords.latitude, p.coords.longitude];
-    currentPos = calibOffset
-      ? [rawPos[0]-calibOffset.lat, rawPos[1]-calibOffset.lng]
-      : rawPos;
-    const acc = Math.round(p.coords.accuracy);
-    const b = document.getElementById('gps-badge');
-    b.textContent = calibOffset ? `GPS ±${acc}m ✓보정` : `GPS ±${acc}m`;
-    b.className = calibOffset ? 'calib' : acc<=15 ? 'ok' : '';
-    updLoc(currentPos, acc);
-    // 라인 그리기 프리뷰 업데이트
-    if(drawMode && drawPoints.length>0 && drawPreview){
-      drawPreview.setLatLngs([drawPoints[drawPoints.length-1], currentPos]);
-    }
+    rawPos=[p.coords.latitude,p.coords.longitude];
+    currentPos=calibOffset?[rawPos[0]-calibOffset.lat,rawPos[1]-calibOffset.lng]:rawPos;
+    const acc=Math.round(p.coords.accuracy);
+    const b=document.getElementById('gps-badge');
+    b.textContent=calibOffset?`GPS ±${acc}m ✓`:`GPS ±${acc}m`;
+    b.className=calibOffset?'calib':acc<=15?'ok':'';
+    updLoc(currentPos,acc);
   },()=>{document.getElementById('gps-badge').textContent='GPS 오류';},{enableHighAccuracy:true,maximumAge:5000});
 })();
 
-function updLoc(pos, acc){
-  if(locCir) map.removeLayer(locCir);
-  if(locMk)  map.removeLayer(locMk);
-  locCir = L.circle(pos,{radius:acc,color:'#3b82f6',fillColor:'#3b82f6',fillOpacity:.1,weight:1}).addTo(map);
-  // GPS 스냅 — 활성 라인이 있으면 중앙선 위 수선발로 이동
-  const snapped = snapToActiveLine(pos);
-  locMk = L.circleMarker(snapped,{radius:9,color:'#fff',fillColor:'#1d4ed8',fillOpacity:1,weight:2.5}).addTo(map);
-  locMk.bindTooltip(calibOffset?'현재 위치 (보정됨)':'현재 위치',{permanent:false,direction:'top'});
+function updLoc(pos,acc){
+  if(locCir)map.removeLayer(locCir);if(locMk)map.removeLayer(locMk);
+  locCir=L.circle(pos,{radius:acc,color:'#3b82f6',fillColor:'#3b82f6',fillOpacity:.1,weight:1}).addTo(map);
+  locMk=L.circleMarker(pos,{radius:9,color:'#fff',fillColor:'#1d4ed8',fillOpacity:1,weight:2.5}).addTo(map);
   locMk.bringToFront();
 }
 
-/* ── GPS 스냅: 현재 위치를 활성 라인의 중앙선 위 수선발로 투영 ── */
-function snapToActiveLine(pos){
-  if(!activeRoadId) return pos;
-  const road = roads.find(r=>r.id===activeRoadId);
-  if(!road || road.points.length<2) return pos;
-  // 폴리라인의 모든 세그먼트 중 가장 가까운 수선발 찾기
-  let best = null, bestDist = Infinity;
-  for(let i=0;i<road.points.length-1;i++){
-    const foot = footOnSegment(pos, road.points[i], road.points[i+1]);
-    const d = haverDist(pos[0],pos[1],foot[0],foot[1]);
-    if(d<bestDist){bestDist=d;best=foot;}
-  }
-  return best||pos;
-}
-
-/* 점 P를 선분 A-B 위에 투영한 수선발 계산 */
-function footOnSegment(P, A, B){
-  const ax=A[1],ay=A[0],bx=B[1],by=B[0],px=P[1],py=P[0];
-  const abx=bx-ax,aby=by-ay;
-  const len2=abx*abx+aby*aby;
-  if(len2===0) return A;
-  let t=((px-ax)*abx+(py-ay)*aby)/len2;
-  t=Math.max(0,Math.min(1,t));
-  return [ay+t*aby, ax+t*abx];
-}
-
-/* ── 오프셋 계산: 중앙선 위 스냅 위치에서 좌/우 perpendicular 방향으로 width/2 ── */
-function offsetPoint(snapPos, road, side){
-  if(!road || road.points.length<2) return snapPos;
-  // 스냅 위치에서 가장 가까운 세그먼트의 방위각 계산
-  let bestSeg = null, bestDist = Infinity;
-  for(let i=0;i<road.points.length-1;i++){
-    const foot = footOnSegment(snapPos, road.points[i], road.points[i+1]);
-    const d = haverDist(snapPos[0],snapPos[1],foot[0],foot[1]);
-    if(d<bestDist){bestDist=d;bestSeg=i;}
-  }
-  if(bestSeg===null) return snapPos;
-  const bearing = calcBearing(road.points[bestSeg], road.points[bestSeg+1]);
-  const perpBearing = side==='right' ? (bearing+90)%360 : (bearing+270)%360;
-  const halfWidth = (road.width||6)/2;
-  return destPoint(snapPos, perpBearing, halfWidth);
-}
-
-/* 기준점에서 방위각 방향으로 d미터 이동한 지점 */
-function destPoint(origin, bearing, distM){
-  const R=6371000;
-  const lat1=origin[0]*Math.PI/180;
-  const lng1=origin[1]*Math.PI/180;
-  const brng=bearing*Math.PI/180;
-  const lat2=Math.asin(Math.sin(lat1)*Math.cos(distM/R)+Math.cos(lat1)*Math.sin(distM/R)*Math.cos(brng));
-  const lng2=lng1+Math.atan2(Math.sin(brng)*Math.sin(distM/R)*Math.cos(lat1),Math.cos(distM/R)-Math.sin(lat1)*Math.sin(lat2));
-  return [lat2*180/Math.PI, lng2*180/Math.PI];
-}
-
-/* ── GPS 위치 보정 ── */
-function calibrate(){
+function doCalib(){
   if(!rawPos){alert('GPS 신호를 기다리는 중입니다.');return;}
-  // 모든 라인의 시작점/종점 수집
-  const allPts = [];
+  const pts=[];
   roads.forEach(r=>{
-    if(r.points.length>0) allPts.push({lat:r.points[0][0],lng:r.points[0][1]});
-    if(r.points.length>1) allPts.push({lat:r.points[r.points.length-1][0],lng:r.points[r.points.length-1][1]});
+    if(r.points.length>0)pts.push({lat:r.points[0][0],lng:r.points[0][1]});
+    if(r.points.length>1)pts.push({lat:r.points[r.points.length-1][0],lng:r.points[r.points.length-1][1]});
   });
-  if(!allPts.length){
-    calibOffset={lat:0,lng:0};
-    document.getElementById('calib-info').textContent='보정 적용 (라인 없음)';
-    document.getElementById('bb-calib').classList.add('done');
-    document.getElementById('bb-calib').textContent='✓ 보정됨';
-    setBanner('GPS 보정 완료');
-    return;
-  }
-  const near = allPts.reduce((b,pt)=>{const d=haverDist(rawPos[0],rawPos[1],pt.lat,pt.lng);return d<b.d?{d,pt}:b;},{d:Infinity,pt:null});
-  const dm = Math.round(near.d);
-  // 확인창 없이 즉시 보정 적용
-  calibOffset={lat:rawPos[0]-near.pt.lat, lng:rawPos[1]-near.pt.lng};
-  const acc=Math.round(rawPos ? (document.getElementById('gps-badge').textContent.match(/±(\d+)m/)?.[1]||'?') : '?');
-  document.getElementById('calib-info').textContent=`GPS 오차 ${dm}m 보정됨`;
-  document.getElementById('bb-calib').classList.add('done');
-  document.getElementById('bb-calib').textContent=`✓ 보정됨 (${dm}m)`;
-  setBanner(`📍 위치 보정 완료 — GPS 오차 ${dm}m 보정 적용`);
+  if(!pts.length){calibOffset={lat:0,lng:0};document.getElementById('tb-calib').classList.add('done');document.getElementById('tb-calib').textContent='✓ 보정됨';setSt('GPS 보정 완료','ok');return;}
+  const near=pts.reduce((b,pt)=>{const d=haverDist(rawPos[0],rawPos[1],pt.lat,pt.lng);return d<b.d?{d,pt}:b;},{d:Infinity,pt:null});
+  const dm=Math.round(near.d);
+  confirm2('GPS 위치 보정',`가장 가까운 라인 끝점: ${dm}m 거리\n현재 위치를 이 점으로 보정할까요?`,'보정 적용','#059669').then(ok=>{
+    if(!ok)return;
+    calibOffset={lat:rawPos[0]-near.pt.lat,lng:rawPos[1]-near.pt.lng};
+    document.getElementById('tb-calib').classList.add('done');
+    document.getElementById('tb-calib').textContent=`✓ ${dm}m 보정`;
+    setSt(`GPS 보정 완료 — 오차 ${dm}m 적용`,'ok');
+  });
 }
 
-/* ── 라인 그리기 ── */
-function toggleLineDraw(){
-  if(drawMode && drawPoints.length>0){openPop('pop-cancel');return;}
-  drawMode = !drawMode;
-  const lb = document.getElementById('lb-main');
-  if(drawMode){
-    lb.classList.add('draw');
-    lb.textContent='✏️ 시작점 탭하세요 (재탭=취소)';
-    setBanner('지도를 탭해 라인 시작점을 찍으세요');
-    document.getElementById('banner-dot').classList.add('draw');
-  } else {
-    cancelLineDraw();
-  }
+/* 라인 그리기 */
+function toggleDraw(){
+  if(drawMode){cancelDraw();return;}
+  drawMode=true;drawPts=[];drawMks=[];drawLine=null;drawDblTmr=null;
+  document.getElementById('tb-draw').classList.add('on');
+  document.getElementById('tb-draw').textContent='✏️ 그리는 중';
+  document.getElementById('sdot').className='draw';
+  setSt('지도를 탭해 점을 찍으세요 — 더블탭으로 완료');
 }
 
-function cancelLineDraw(){
-  drawMode=false; drawPoints=[];drawDblTimer=null;
-  drawTmpMks.forEach(m=>map.removeLayer(m));drawTmpMks=[];
-  if(drawTmpLine){map.removeLayer(drawTmpLine);drawTmpLine=null;}
-  if(drawPreview){map.removeLayer(drawPreview);drawPreview=null;}
-  const lb=document.getElementById('lb-main');
-  lb.classList.remove('draw','rec');
-  lb.textContent='✏️ 라인 그리기';
-  document.getElementById('banner-dot').classList.remove('rec','draw');
-  setBanner('✏️ 라인 그리기로 기준선을 먼저 그으세요');
+function cancelDraw(){
+  drawMode=false;drawPts=[];
+  drawMks.forEach(m=>map.removeLayer(m));drawMks=[];
+  if(drawLine){map.removeLayer(drawLine);drawLine=null;}
+  document.getElementById('tb-draw').classList.remove('on');
+  document.getElementById('tb-draw').textContent='✏️ 라인';
+  document.getElementById('sdot').className='';
+  setSt('✏️ 라인 버튼으로 도로 구간을 그으세요');
 }
 
-/* 단일탭 — 중간점 추가 */
-map.on('click', function(e){
-  if(vacantPinMode){placeVacantPin(e.latlng);return;}
-  if(!drawMode) return;
-  if(drawDblTimer!==null) return;
-  drawDblTimer=setTimeout(()=>{
-    drawDblTimer=null;
-    addDrawPoint([e.latlng.lat,e.latlng.lng]);
-  },280);
+/* 지도 클릭 */
+map.on('click',function(e){
+  if(calibPhotoId!==null){applyPhotoCalib(e.latlng);return;}
+  if(!drawMode)return;
+  if(drawDblTmr!==null){clearTimeout(drawDblTmr);drawDblTmr=null;finishDraw();return;}
+  drawDblTmr=setTimeout(()=>{drawDblTmr=null;addDrawPoint(e.latlng);},280);
 });
 
-/* 더블탭 — 종점 확정, 라인 저장 */
-map.on('dblclick', function(e){
-  if(vacantPinMode) return;
-  if(!drawMode) return;
-  if(drawDblTimer!==null){clearTimeout(drawDblTimer);drawDblTimer=null;}
-  if(drawPoints.length===0) addDrawPoint([e.latlng.lat,e.latlng.lng]);
-  finishLineDraw([e.latlng.lat,e.latlng.lng]);
-});
-
-function addDrawPoint(ll){
-  drawPoints.push(ll);
-  const isFirst = drawPoints.length===1;
-  const mk=L.circleMarker(ll,{radius:isFirst?8:5,color:isFirst?'#7c3aed':'#6b7280',fillColor:isFirst?'#7c3aed':'#fff',fillOpacity:1,weight:2}).addTo(map);
-  if(isFirst) mk.bindTooltip('시작점',{permanent:true,direction:'top',offset:[0,-8]});
-  drawTmpMks.push(mk);
-  if(drawTmpLine) map.removeLayer(drawTmpLine);
-  if(drawPoints.length>=2) drawTmpLine=L.polyline(drawPoints,{color:'#7c3aed',weight:3,opacity:.9}).addTo(map);
-  if(drawPreview) map.removeLayer(drawPreview);
-  const endPt=currentPos||ll;
-  drawPreview=L.polyline([ll,endPt],{color:'#7c3aed',weight:2,dashArray:'8,6',opacity:.6}).addTo(map);
-  const lb=document.getElementById('lb-main');
-  if(isFirst){
-    lb.classList.remove('draw');lb.classList.add('rec');
-    lb.textContent='● 꺾임점 탭 · 더블탭=종점 완성';
-    document.getElementById('banner-dot').classList.remove('draw');
-    document.getElementById('banner-dot').classList.add('rec');
-  }
-  setBanner(`점 ${drawPoints.length}개 — 더블탭으로 종점 확정`);
+function addDrawPoint(latlng){
+  const pt=[latlng.lat,latlng.lng];drawPts.push(pt);
+  const mk=L.circleMarker(latlng,{radius:6,color:'#7c3aed',fillColor:'#fff',fillOpacity:1,weight:2}).addTo(map);
+  drawMks.push(mk);
+  if(drawPts.length>1){if(drawLine)map.removeLayer(drawLine);drawLine=L.polyline(drawPts,{color:'#7c3aed',weight:3,dashArray:'8,5',opacity:.8}).addTo(map);}
+  setSt(`점 ${drawPts.length}개 — 더블탭으로 완료`);
 }
 
-function finishLineDraw(endLL){
-  if(drawPoints.length===0) return;
-  const allPts=[...drawPoints,endLL];
+function finishDraw(){
+  if(drawPts.length<2){cancelDraw();return;}
+  drawMks.forEach(m=>map.removeLayer(m));drawMks=[];
+  if(drawLine){map.removeLayer(drawLine);drawLine=null;}
+  drawMode=false;
+  document.getElementById('tb-draw').classList.remove('on');
+  document.getElementById('tb-draw').textContent='✏️ 라인';
+  document.getElementById('sdot').className='';
   let totalLen=0;
-  for(let i=1;i<allPts.length;i++) totalLen+=haverDist(allPts[i-1][0],allPts[i-1][1],allPts[i][0],allPts[i][1]);
+  for(let i=1;i<drawPts.length;i++)totalLen+=haverDist(drawPts[i-1][0],drawPts[i-1][1],drawPts[i][0],drawPts[i][1]);
   totalLen=Math.round(totalLen);
-
-  // 임시 요소 제거
-  drawTmpMks.forEach(m=>map.removeLayer(m));drawTmpMks=[];
-  if(drawTmpLine){map.removeLayer(drawTmpLine);drawTmpLine=null;}
-  if(drawPreview){map.removeLayer(drawPreview);drawPreview=null;}
-
-  drawMode=false;drawPoints=[];
-  document.getElementById('banner-dot').classList.remove('rec','draw');
-  const lb=document.getElementById('lb-main');
-  lb.classList.remove('draw','rec');
-  lb.textContent='✏️ 라인 그리기';
-
-  // 라인 저장 (속성은 기본값, 나중에 탭해서 입력)
-  const road={
-    id:Date.now(),
-    points:allPts,
-    length:totalLen,
-    width:null,
-    typeRight:'white', typeLeft:'white',
-    cars:{right:0,left:0}, large:{right:0,left:0}, camp:{right:0,left:0},
-    obstacles:{right:[],left:[]},
-    widthRemain:null, firetruck:false, crossable:false,
-    congestion:'', memo:'',
-    startTime:nowStr(), endTime:null,
-    bearing:Math.round(calcBearing(allPts[0],allPts[allPts.length-1])),
-  };
-  roads.push(road);
-  addRoadToMap(road);
-  saveData();
-  setBanner(`라인 저장됨 — 선을 탭해 속성을 입력하세요`);
+  const num=roads.length+1;
+  const road={id:Date.now(),num,points:[...drawPts],length:totalLen,lineType:null,widthRemain:null,firetruck:false,cnts:{},photos:[],memo:'',time:nowStr(),bearing:Math.round(calcBearing(drawPts[0],drawPts[drawPts.length-1]))};
+  BASE_CNTS.forEach(c=>{road.cnts[c.key]=0;});
+  customCnts.forEach(c=>{road.cnts[c.key]=0;});
+  roads.push(road);addRoadToMap(road);saveData();
+  setSt(`라인 ${num} 저장됨 (${fmtLen(totalLen)}) — 선을 탭해 속성 입력`,'ok');
+  drawPts=[];
+  openLineProp(road.id);
 }
 
-/* ── 지도에 라인 그리기 ── */
+/* 지도에 라인 렌더 */
 function addRoadToMap(road){
-  // 중앙선
-  const centerLine = L.polyline(road.points,{color:'#7c3aed',weight:3,opacity:.7,dashArray:'10,5'}).addTo(map);
+  const cfg=LC[road.lineType]||{color:'#7c3aed',weight:3,dash:'8,5'};
+  const pl=L.polyline(road.points,{color:cfg.color,weight:cfg.weight,dashArray:cfg.dash||null,opacity:.9}).addTo(map);
+  const mid=road.points[Math.floor(road.points.length/2)];
+  const lm=L.marker(mid,{icon:L.divIcon({html:`<div class="road-label">${road.num}</div>`,className:'',iconAnchor:[10,8]}),interactive:false,zIndexOffset:100}).addTo(map);
 
-  // 가장자리선 (도로폭 있을 때만)
-  let edgeR=null, edgeL=null;
-  if(road.width){
-    [edgeR,edgeL]=buildEdgeLines(road);
-  }
-
-  // 시작/종점 마커
-  const startMk=L.circleMarker(road.points[0],{radius:6,color:'#7c3aed',fillColor:'#fff',fillOpacity:1,weight:2}).addTo(map);
-  const endMk  =L.circleMarker(road.points[road.points.length-1],{radius:6,color:'#7c3aed',fillColor:'#fff',fillOpacity:1,weight:2}).addTo(map);
-
-  // 탭 = 속성 팝업, 롱프레스 = 삭제
+  /* 탭 = 속성창 — 그리기/보정 모드면 무시 */
   let pressTimer=null;
-  const onPress=()=>{pressTimer=setTimeout(()=>{pressTimer=null;confirmDelRoad(road.id);},600);};
-  const onRelease=(e)=>{
+  pl.on('mousedown touchstart',()=>{pressTimer=setTimeout(()=>{pressTimer=null;},600);});
+  pl.on('mouseup touchend',e=>{
     if(pressTimer){clearTimeout(pressTimer);pressTimer=null;
-      L.DomEvent.stop(e);
-      openLineProp(road.id);
+      if(drawMode||calibPhotoId!==null)return;
+      L.DomEvent.stop(e);openLineProp(road.id);
     }
-  };
-  [centerLine,edgeR,edgeL].forEach(layer=>{
-    if(!layer) return;
-    layer.on('mousedown touchstart',onPress);
-    layer.on('mouseup touchend',onRelease);
-    layer.on('mouseleave touchcancel',()=>{if(pressTimer){clearTimeout(pressTimer);pressTimer=null;}});
   });
+  pl.on('mouseleave touchcancel',()=>{if(pressTimer){clearTimeout(pressTimer);pressTimer=null;}});
 
-  // 툴팁
-  const totalCars=(road.cars.right||0)+(road.cars.left||0);
-  const tip=`${fmtLen(road.length)}${road.width?` · 폭${road.width}m`:''}${totalCars?` · ${totalCars}대`:''}${road.firetruck?' 🚒':''}`;
-  centerLine.bindTooltip(tip,{direction:'top'});
-
-  mapLayers['road_'+road.id]={centerLine,edgeR,edgeL,startMk,endMk};
+  const photoMks={};
+  (road.photos||[]).forEach(ph=>{photoMks[ph.id]=addPhotoMarker(ph);});
+  mapLayers['road_'+road.id]={pl,lm,photoMks};
 }
 
-function buildEdgeLines(road){
-  if(!road.width||road.points.length<2) return [null,null];
-  const half=road.width/2;
-  const cfgR=LC[road.typeRight]||LC.white;
-  const cfgL=LC[road.typeLeft]||LC.white;
-
-  const ptsR=[], ptsL=[];
-  // 각 점에서 수직 방향으로 half 미터 오프셋
-  for(let i=0;i<road.points.length;i++){
-    // 방위각: 이전-현재 또는 현재-다음 세그먼트 평균
-    let b;
-    if(i===0) b=calcBearing(road.points[0],road.points[1]);
-    else if(i===road.points.length-1) b=calcBearing(road.points[i-1],road.points[i]);
-    else b=calcBearing(road.points[i-1],road.points[i+1]);
-    ptsR.push(destPoint(road.points[i],(b+90)%360,half));
-    ptsL.push(destPoint(road.points[i],(b+270)%360,half));
-  }
-  const edgeR=L.polyline(ptsR,{color:cfgR.color,weight:cfgR.weight,dashArray:cfgR.dash||null,opacity:.9}).addTo(map);
-  const edgeL=L.polyline(ptsL,{color:cfgL.color,weight:cfgL.weight,dashArray:cfgL.dash||null,opacity:.9}).addTo(map);
-
-  // 가장자리선도 탭/롱프레스 이벤트 (중앙선과 동일)
-  return [edgeR,edgeL];
+function refreshRoadLine(road){
+  const layers=mapLayers['road_'+road.id];if(!layers)return;
+  const cfg=LC[road.lineType]||{color:'#7c3aed',weight:3,dash:'8,5'};
+  layers.pl.setStyle({color:cfg.color,weight:cfg.weight,dashArray:cfg.dash||null});
+  const total=totalCars(road);
+  const density=road.length>0?(total/road.length*10).toFixed(1):'-';
+  layers.pl.bindTooltip(`라인 ${road.num} · ${fmtLen(road.length)} · ${total}대 · ${density}대/10m`,{direction:'top',sticky:true});
+  /* 번호 라벨 위치 갱신 */
+  const mid=road.points[Math.floor(road.points.length/2)];
+  layers.lm.setLatLng(mid);
+  layers.lm.setIcon(L.divIcon({html:`<div class="road-label">${road.num}</div>`,className:'',iconAnchor:[10,8]}));
 }
 
-function refreshRoadOnMap(road){
-  const layers=mapLayers['road_'+road.id];
-  if(!layers) return;
-  // 가장자리선 제거 후 재생성
-  if(layers.edgeR){map.removeLayer(layers.edgeR);layers.edgeR=null;}
-  if(layers.edgeL){map.removeLayer(layers.edgeL);layers.edgeL=null;}
-  if(road.width){
-    const [eR,eL]=buildEdgeLines(road);
-    layers.edgeR=eR; layers.edgeL=eL;
-    // 가장자리선에도 탭/롱프레스 재등록
-    let pressTimer=null;
-    const onPress=()=>{pressTimer=setTimeout(()=>{pressTimer=null;confirmDelRoad(road.id);},600);};
-    const onRelease=(e)=>{if(pressTimer){clearTimeout(pressTimer);pressTimer=null;L.DomEvent.stop(e);openLineProp(road.id);}};
-    [eR,eL].forEach(layer=>{
-      if(!layer) return;
-      layer.on('mousedown touchstart',onPress);
-      layer.on('mouseup touchend',onRelease);
-      layer.on('mouseleave touchcancel',()=>{if(pressTimer){clearTimeout(pressTimer);pressTimer=null;}});
-    });
-  }
-  // 툴팁 갱신
-  const totalCars=(road.cars.right||0)+(road.cars.left||0);
-  const tip=`${fmtLen(road.length)}${road.width?` · 폭${road.width}m`:''}${totalCars?` · ${totalCars}대`:''}${road.firetruck?' 🚒':''}`;
-  layers.centerLine.setTooltipContent(tip);
-  // 활성 라인 업데이트
-  if(road.width) activeRoadId=road.id;
+function removeRoadFromMap(id){
+  const l=mapLayers['road_'+id];if(!l)return;
+  map.removeLayer(l.pl);map.removeLayer(l.lm);
+  Object.values(l.photoMks||{}).forEach(m=>map.removeLayer(m));
+  delete mapLayers['road_'+id];
 }
 
-/* ── 라인 속성 팝업 ── */
-function openLineProp(roadId){
-  const road=roads.find(r=>r.id===roadId);
-  if(!road) return;
-  editingRoadId=roadId;
-  activeRoadId=roadId;  // 속성 팝업 열면 해당 라인을 활성 라인으로 지정
-  lpTypeRight=road.typeRight||'white';
-  lpTypeLeft=road.typeLeft||'white';
-  lpCurrentSide='right';
+function addPhotoMarker(ph){
+  const icon=L.divIcon({html:`<div style="background:#1d4ed8;color:#fff;font-size:13px;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.4);">📷</div>`,className:'',iconAnchor:[13,13]});
+  const mk=L.marker([ph.lat,ph.lng],{icon}).addTo(map);
+  mk.bindTooltip(`사진 · ${ph.time}${ph.calibrated?' (보정됨)':' (GPS)'}`,{direction:'top'});
+  return mk;
+}
 
-  const bearing=road.bearing||calcBearing(road.points[0],road.points[road.points.length-1]);
-  const bDir=bearingToText(bearing);
-  const rDir=bearingToText((bearing+90)%360);
-  const lDir=bearingToText((bearing+270)%360);
-  document.getElementById('lp-arr').style.transform=`rotate(${bearing}deg)`;
-  document.getElementById('lp-bearing-text').textContent=`진행방향 ${bearing}°(${bDir}향) — 우:${rDir} / 좌:${lDir}`;
-  document.getElementById('lp-tab-r').textContent=`▶ 우측 (${rDir}쪽)`;
-  document.getElementById('lp-tab-l').textContent=`◀ 좌측 (${lDir}쪽)`;
-  document.getElementById('lp-title').textContent='라인 속성';
-  document.getElementById('lp-auto').textContent=`📐 거리: ${fmtLen(road.length)}  |  ${road.startTime||''}`;
-
-  document.getElementById('lp-width').value=road.width||7;
+/* 라인 속성 팝업 */
+function openLineProp(id){
+  const road=roads.find(r=>r.id===id);if(!road)return;
+  editId=id;lpType=road.lineType;
+  lpCnts={...road.cnts};
+  lpPhotos=(road.photos||[]).map(p=>({...p}));
+  document.getElementById('lp-title').textContent=`라인 ${road.num} 속성`;
+  document.getElementById('lp-auto').textContent=`거리: ${fmtLen(road.length)}  |  방위: ${bearingToText(road.bearing)}  |  ${road.time}`;
   document.getElementById('lp-remain').value=road.widthRemain||'';
-  if(road.widthRemain) calcRemain(); else document.getElementById('lp-remain-result').style.display='none';
-
-  lpSide('right');
-  // 선종류 버튼 초기화
-  ['lr-w','lr-y1','lr-y2','lr-ob','ll-w','ll-y1','ll-y2','ll-ob'].forEach(id=>document.getElementById(id)?.classList.remove('sel'));
-  lpSetTBtn(lpTypeRight,'right'); lpSetTBtn(lpTypeLeft,'left');
-
-  document.getElementById('lp-cars-r').value=road.cars?.right||'';
-  document.getElementById('lp-large-r').value=road.large?.right||'';
-  document.getElementById('lp-camp-r').value=road.camp?.right||'';
-  document.getElementById('lp-cars-l').value=road.cars?.left||'';
-  document.getElementById('lp-large-l').value=road.large?.left||'';
-  document.getElementById('lp-camp-l').value=road.camp?.left||'';
-  document.getElementById('lp-obs-r-wrap').style.display=lpTypeRight==='obstacle'?'':'none';
-  document.getElementById('lp-obs-l-wrap').style.display=lpTypeLeft==='obstacle'?'':'none';
-  document.querySelectorAll('#chips-obs-r .chip').forEach(c=>c.classList.toggle('sel',(road.obstacles?.right||[]).includes(c.dataset.val)));
-  document.querySelectorAll('#chips-obs-l .chip').forEach(c=>c.classList.toggle('sel',(road.obstacles?.left||[]).includes(c.dataset.val)));
-  document.getElementById('lp-cong').value=road.congestion||'';
   document.getElementById('lp-memo').value=road.memo||'';
-
-  // 카운터 가져오기 박스 숨김 (카운팅이 라인에 실시간 반영되므로 불필요)
-  document.getElementById('lp-ci').style.display='none';
-
+  const m2={white:'w',yellow1:'y1',yellow2:'y2',obstacle:'ob'};
+  Object.keys(m2).forEach(k=>document.getElementById('lt-'+m2[k])?.classList.toggle('sel',k===lpType));
+  checkFT();renderCntBars();renderPhotoList();
   openPop('pop-line');
 }
 
-function updateEdgeLines(){
-  // 도로폭 입력 시 실시간 가장자리선 프리뷰
-  if(!editingRoadId) return;
-  const road=roads.find(r=>r.id===editingRoadId);
-  if(!road) return;
-  road.width=parseFloat(document.getElementById('lp-width').value)||null;
-  refreshRoadOnMap(road);
-}
+function cancelLineProp(){closePop('pop-line');editId=null;lpType=null;lpCnts={};lpPhotos=[];}
 
-function calcRemain(){
-  const r=parseFloat(document.getElementById('lp-remain').value);
-  const el=document.getElementById('lp-remain-result');
-  if(isNaN(r)){el.style.display='none';return;}
-  el.style.display='';
-  if(r<4)      {el.className='width-result width-danger';el.textContent=`🚒 소방차 통행 불가 (${r}m — 최소 4m 필요)`;}
-  else if(r<6) {el.className='width-result width-warn'; el.textContent=`⚠ 양방향 교행 불가 (${r}m)`;}
-  else         {el.className='width-result width-ok';   el.textContent=`✅ 소방차·교행 모두 가능 (${r}m)`;}
-}
-
-function lpSide(side){
-  lpCurrentSide=side;
-  document.getElementById('lp-tab-r').classList.toggle('active',side==='right');
-  document.getElementById('lp-tab-l').classList.toggle('active',side==='left');
-  document.getElementById('lp-panel-r').classList.toggle('active',side==='right');
-  document.getElementById('lp-panel-l').classList.toggle('active',side==='left');
-}
-
-function lpSelT(t,side){
-  if(side==='right') lpTypeRight=t; else lpTypeLeft=t;
-  lpSetTBtn(t,side);
-  const pfx=side==='right'?'lr':'ll';
-  document.getElementById(`lp-obs-${side==='right'?'r':'l'}-wrap`).style.display=t==='obstacle'?'':'none';
-  // 도로폭이 입력되어 있으면 가장자리선 색 즉시 업데이트
-  if(editingRoadId){
-    const road=roads.find(r=>r.id===editingRoadId);
-    if(road){road.typeRight=lpTypeRight;road.typeLeft=lpTypeLeft;refreshRoadOnMap(road);}
-  }
-}
-
-function lpSetTBtn(t,side){
-  const pfx=side==='right'?'lr':'ll';
-  [`${pfx}-w`,`${pfx}-y1`,`${pfx}-y2`,`${pfx}-ob`].forEach(id=>document.getElementById(id)?.classList.remove('sel'));
-  const map2={white:`${pfx}-w`,yellow1:`${pfx}-y1`,yellow2:`${pfx}-y2`,obstacle:`${pfx}-ob`};
-  if(map2[t]) document.getElementById(map2[t]).classList.add('sel');
-}
-
-function lpImportCnt(){
-  document.getElementById(`lp-cars-${lpCurrentSide==='right'?'r':'l'}`).value=
-    (counters['car_'+lpCurrentSide]||0)+(counters['large_'+lpCurrentSide]||0)+(counters['camp_'+lpCurrentSide]||0);
-  document.getElementById(`lp-large-${lpCurrentSide==='right'?'r':'l'}`).value=counters['large_'+lpCurrentSide]||0;
-  document.getElementById(`lp-camp-${lpCurrentSide==='right'?'r':'l'}`).value=counters['camp_'+lpCurrentSide]||0;
-}
-
-function saveLine(){
-  const road=roads.find(r=>r.id===editingRoadId);
-  if(!road) return;
-  road.width=parseFloat(document.getElementById('lp-width').value)||null;
-  road.widthRemain=parseFloat(document.getElementById('lp-remain').value)||null;
-  road.typeRight=lpTypeRight;
-  road.typeLeft=lpTypeLeft;
-  road.cars={right:parseInt(document.getElementById('lp-cars-r').value)||0, left:parseInt(document.getElementById('lp-cars-l').value)||0};
-  road.large={right:parseInt(document.getElementById('lp-large-r').value)||0, left:parseInt(document.getElementById('lp-large-l').value)||0};
-  road.camp={right:parseInt(document.getElementById('lp-camp-r').value)||0, left:parseInt(document.getElementById('lp-camp-l').value)||0};
-  road.obstacles={
-    right:Array.from(document.querySelectorAll('#chips-obs-r .chip.sel')).map(c=>c.dataset.val),
-    left: Array.from(document.querySelectorAll('#chips-obs-l .chip.sel')).map(c=>c.dataset.val),
-  };
+function saveLineProp(){
+  const road=roads.find(r=>r.id===editId);if(!road){closePop('pop-line');return;}
+  road.lineType=lpType;
   road.widthRemain=parseFloat(document.getElementById('lp-remain').value)||null;
   road.firetruck=road.widthRemain!==null&&road.widthRemain<4;
-  road.crossable=road.widthRemain!==null&&road.widthRemain>=6;
-  road.congestion=document.getElementById('lp-cong').value;
-  road.memo=document.getElementById('lp-memo').value;
-  road.endTime=nowStr();
-  refreshRoadOnMap(road);
-  saveData();
-  closePop('pop-line');
-  if(road.width) activeRoadId=road.id;
-  setBanner(`라인 저장 완료${road.width?` — 도로폭 ${road.width}m, GPS 스냅 활성`:' — 도로폭을 입력하면 가장자리선이 생성됩니다'}`);
+  road.cnts={...lpCnts};
+  road.photos=lpPhotos.map(p=>({...p}));
+  road.memo=document.getElementById('lp-memo').value.trim();
+  const layers=mapLayers['road_'+road.id];
+  if(layers){Object.values(layers.photoMks||{}).forEach(m=>map.removeLayer(m));layers.photoMks={};road.photos.forEach(ph=>{layers.photoMks[ph.id]=addPhotoMarker(ph);});}
+  refreshRoadLine(road);saveData();closePop('pop-line');
+  setSt(`라인 ${road.num} 저장됨`,'ok');
+  editId=null;lpType=null;lpCnts={};lpPhotos=[];
 }
 
-function confirmDelRoad(id){
-  confirm2('라인 삭제','이 라인을 삭제할까요?\n(롱프레스로 실행됨)','삭제','#dc2626').then(ok=>{
-    if(!ok) return;
-    const l=mapLayers['road_'+id];
-    if(l){
-      if(l.centerLine) map.removeLayer(l.centerLine);
-      if(l.edgeR)  map.removeLayer(l.edgeR);
-      if(l.edgeL)  map.removeLayer(l.edgeL);
-      if(l.startMk) map.removeLayer(l.startMk);
-      if(l.endMk)   map.removeLayer(l.endMk);
-    }
-    delete mapLayers['road_'+id];
-    roads=roads.filter(r=>r.id!==id);
-    if(activeRoadId===id) activeRoadId=null;
-    saveData();
+function deleteCurrentRoad(){
+  if(!editId)return;
+  const road=roads.find(r=>r.id===editId);
+  confirm2('라인 삭제',`라인 ${road?.num}을 삭제할까요?`,'삭제','#dc2626').then(ok=>{
+    if(!ok)return;
+    removeRoadFromMap(editId);
+    roads=roads.filter(r=>r.id!==editId);
+    roads.forEach((r,i)=>{r.num=i+1;refreshRoadLine(r);});
+    saveData();closePop('pop-line');setSt('라인 삭제됨');editId=null;
   });
 }
 
-function deleteCurrentLine(){
-  if(!editingRoadId) return;
-  confirm2('라인 삭제','이 라인을 삭제할까요?','삭제','#dc2626').then(ok=>{
-    if(!ok) return;
-    const id = editingRoadId;
-    const l=mapLayers['road_'+id];
-    if(l){
-      if(l.centerLine) map.removeLayer(l.centerLine);
-      if(l.edgeR)  map.removeLayer(l.edgeR);
-      if(l.edgeL)  map.removeLayer(l.edgeL);
-      if(l.startMk) map.removeLayer(l.startMk);
-      if(l.endMk)   map.removeLayer(l.endMk);
-    }
-    delete mapLayers['road_'+id];
-    roads=roads.filter(r=>r.id!==id);
-    if(activeRoadId===id) activeRoadId=null;
-    saveData();
-    closePop('pop-line');
-    setBanner('라인이 삭제되었습니다');
+function selType(t){
+  lpType=t;
+  const m={white:'w',yellow1:'y1',yellow2:'y2',obstacle:'ob'};
+  Object.keys(m).forEach(k=>document.getElementById('lt-'+m[k])?.classList.toggle('sel',k===t));
+}
+
+function checkFT(){
+  const v=parseFloat(document.getElementById('lp-remain').value);
+  document.getElementById('ft-box').classList.toggle('show',!isNaN(v)&&v<4);
+}
+
+/* 카운터 바 */
+function renderCntBars(){
+  const allCnts=[...BASE_CNTS,...customCnts];
+  allCnts.forEach(c=>{if(lpCnts[c.key]===undefined)lpCnts[c.key]=0;});
+  const el=document.getElementById('cnt-bars');el.innerHTML='';
+  allCnts.forEach(c=>{
+    const isCustom=!BASE_CNTS.find(b=>b.key===c.key);
+    const bar=document.createElement('div');bar.className='cnt-bar';
+    bar.innerHTML=`
+      <button class="cnt-minus" onclick="adjCnt('${c.key}',-1)">−</button>
+      <div class="cnt-mid">
+        ${isCustom?`<div class="cnt-x" onclick="removeCustomCnt('${c.key}')">×</div>`:''}
+        <span class="cnt-lbl">${c.icon} ${c.lbl}</span>
+        <span class="cnt-val" id="cv-${c.key}">${lpCnts[c.key]||0}</span>
+      </div>
+      <button class="cnt-plus" onclick="adjCnt('${c.key}',1)">+</button>`;
+    el.appendChild(bar);
   });
 }
 
-/* ── 카운터 ── */
-function initCnt(){
-  DC.forEach(c=>{counters[c.key+'_left']=0;counters[c.key+'_right']=0;});
-  customCnts.forEach(c=>{counters[c.key]=0;});
-  renderCnt(); selVehicle('car');
-}
-
-function selVehicle(key){
-  selectedVehicle=key;
-  DC.forEach(c=>document.getElementById('cb-'+c.key)?.classList.toggle('selected',c.key===key));
-  // 유휴지 핀 모드 UI 해제 (점멸 중이면 멈춤)
-  if(vacantPinMode) exitVacantPin();
-}
-
-function doCntSide(side){
-  if(!selectedVehicle) return;
-  const key=selectedVehicle+'_'+side;
-  counters[key]=(counters[key]||0)+1;
-  const total=(counters[selectedVehicle+'_left']||0)+(counters[selectedVehicle+'_right']||0);
-  const el=document.getElementById('cnt-'+selectedVehicle);
-  if(el) el.textContent=total;
-  const hintEl=document.getElementById('lr-'+side+'-hint');
-  if(hintEl) hintEl.textContent=counters[key]+'대';
-  const btn=document.getElementById('lr-'+side);
-  if(btn){btn.classList.add('flash');setTimeout(()=>btn.classList.remove('flash'),150);}
-
-  // 활성 라인에 실시간 반영
-  if(activeRoadId){
-    const road=roads.find(r=>r.id===activeRoadId);
-    if(road){
-      if(!road.cars) road.cars={right:0,left:0};
-      if(!road.large) road.large={right:0,left:0};
-      if(!road.camp) road.camp={right:0,left:0};
-      const vKey=selectedVehicle; // car / large / camp / obs
-      if(vKey==='car')  road.cars[side]=(road.cars[side]||0)+1;
-      else if(vKey==='large') road.large[side]=(road.large[side]||0)+1;
-      else if(vKey==='camp')  road.camp[side]=(road.camp[side]||0)+1;
-      saveData();
-      // 툴팁 즉시 갱신
-      const totalCars=(road.cars.right||0)+(road.cars.left||0);
-      const layers=mapLayers['road_'+road.id];
-      if(layers?.centerLine) layers.centerLine.setTooltipContent(
-        `${fmtLen(road.length)}${road.width?` · 폭${road.width}m`:''}${totalCars?` · ${totalCars}대`:''}${road.firetruck?' 🚒':''}`
-      );
-    }
-  }
-
-  // 카운터 자동 저장
-  saveData();
-  plotCntMarker(selectedVehicle,side);
-}
-
-function plotCntMarker(key,side){
-  // GPS 스냅 위치 계산
-  const snapPos = currentPos ? snapToActiveLine(currentPos) : currentPos;
-  if(!snapPos) return;
-
-  // 활성 라인이 있으면 가장자리선 위에, 없으면 GPS 위치에
-  let markerPos;
-  const road = activeRoadId ? roads.find(r=>r.id===activeRoadId) : null;
-  if(road && road.width){
-    markerPos = offsetPoint(snapPos, road, side);
-  } else {
-    const j=(Math.random()-.5)*.00003;
-    markerPos=[snapPos[0]+j, snapPos[1]+j];
-  }
-
-  const t=nowStr();
-  const c=DC.find(c=>c.key===key);
-  const col=key==='car'?'#3b82f6':key==='large'?'#f59e0b':key==='camp'?'#8b5cf6':'#ef4444';
-  const mk=L.circleMarker(markerPos,{radius:6,color:col,fillColor:col,fillOpacity:.85,weight:2}).addTo(map);
-  mk.bindTooltip(`${c?.icon||'•'} ${c?.lbl||key} ${side==='left'?'◀':'▶'} · ${t}`,{permanent:false,direction:'top'});
-  cntPts.push({key,side,mk,time:t});
-}
-
-/* ── 유휴지 핀 ── */
-function exitVacantPin(){
-  vacantPinMode=false;
-  document.getElementById('lr-vacant').classList.remove('pinmode');
-  document.getElementById('banner-dot').classList.remove('pin');
-}
-
-function toggleVacantPin(){
-  if(vacantPinMode){
-    exitVacantPin();
-    setBanner('✏️ 라인 그리기로 기준선을 먼저 그으세요');
-  } else {
-    vacantPinMode=true;
-    document.getElementById('lr-vacant').classList.add('pinmode');
-    document.getElementById('banner-dot').classList.add('pin');
-    setBanner('🟩 지도를 탭해 유휴지 위치를 찍으세요 (버튼 재탭 = 종료)');
-  }
-}
-
-function placeVacantPin(latlng){
-  counters['vacant']=(counters['vacant']||0)+1;
-  document.getElementById('cnt-vacant').textContent=counters['vacant'];
-  const t=nowStr();
-  const mk=L.marker(latlng,{
-    icon:L.divIcon({html:`<div style="width:14px;height:14px;background:#059669;border:2px solid #fff;border-radius:3px;box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>`,className:'',iconAnchor:[7,7]})
-  }).addTo(map);
-  mk.bindTooltip(`🟩 유휴지 · ${t}`,{permanent:false,direction:'top'});
-  cntPts.push({key:'vacant',mk,time:t,side:'none'});
-  setBanner(`🟩 유휴지 ${counters['vacant']}개 — 계속 탭하거나 버튼으로 종료`);
-}
-
-function renderCnt(){
-  DC.forEach(c=>{
-    const total=(counters[c.key+'_left']||0)+(counters[c.key+'_right']||0);
-    const el=document.getElementById('cnt-'+c.key);
-    if(el) el.textContent=total;
-  });
-  const ve=document.getElementById('cnt-vacant');
-  if(ve) ve.textContent=counters['vacant']||0;
-  const g=document.getElementById('counter-grid-custom');
-  if(!g) return;
-  g.querySelectorAll('.c-custom').forEach(el=>el.remove());
-  customCnts.forEach(c=>{
-    const d=document.createElement('div');
-    d.className='cnt-btn c-custom';
-    d.innerHTML=`<span class="cnt-del" onclick="delCnt('${c.key}');event.stopPropagation()">✕</span><div class="cnt-icon">${c.icon}</div><div class="cnt-lbl">${c.lbl}</div><div class="cnt-num" id="cnt-${c.key}">${counters[c.key]||0}</div>`;
-    d.addEventListener('click',()=>doCntCustom(c.key));
-    d.addEventListener('contextmenu',e=>{e.preventDefault();undoCntCustom(c.key);});
-    g.appendChild(d);
-  });
-}
-
-function doCntCustom(key){
-  counters[key]=(counters[key]||0)+1;
-  const el=document.getElementById('cnt-'+key);if(el) el.textContent=counters[key];
-  if(currentPos){
-    const j=(Math.random()-.5)*.00003;
-    const ll=[currentPos[0]+j,currentPos[1]+j];
-    const t=nowStr();
-    const mk=L.circleMarker(ll,{radius:6,color:'#6b7280',fillColor:'#6b7280',fillOpacity:.85,weight:2}).addTo(map);
-    mk.bindTooltip(`📌 ${key} · ${t}`,{permanent:false,direction:'top'});
-    cntPts.push({key,side:'none',mk,time:t});
-  }
-}
-
-function undoCntCustom(key){
-  if(!counters[key]) return;
-  counters[key]--;
-  const el=document.getElementById('cnt-'+key);if(el) el.textContent=counters[key];
-  for(let i=cntPts.length-1;i>=0;i--){if(cntPts[i].key===key){map.removeLayer(cntPts[i].mk);cntPts.splice(i,1);break;}}
-}
-
-function resetCnt(){
-  if(!confirm('카운터를 모두 초기화할까요?')) return;
-  Object.keys(counters).forEach(k=>counters[k]=0);
-  cntPts.forEach(p=>map.removeLayer(p.mk));cntPts=[];
-  renderCnt();selVehicle(selectedVehicle);
-}
-
-function resetCntPts(){
-  if(!cntPts.length){alert('지도에 표시된 포인트가 없습니다.');return;}
-  if(!confirm(`지도의 포인트 ${cntPts.length}개를 삭제할까요?\n(숫자는 유지됩니다)`)) return;
-  cntPts.forEach(p=>map.removeLayer(p.mk));cntPts=[];
+function adjCnt(key,delta){
+  lpCnts[key]=Math.max(0,(lpCnts[key]||0)+delta);
+  const el=document.getElementById('cv-'+key);if(el)el.textContent=lpCnts[key];
 }
 
 function openAddCnt(){document.getElementById('ac-name').value='';document.getElementById('ac-icon').value='';openPop('pop-addcnt');}
-function addCnt(){
+
+function confirmAddCnt(){
   const name=document.getElementById('ac-name').value.trim();if(!name){alert('이름을 입력하세요.');return;}
   const icon=document.getElementById('ac-icon').value.trim()||'📌';
   const key='c_'+Date.now();
-  customCnts.push({key,icon,lbl:name});counters[key]=0;
-  localStorage.setItem('v10_cst',JSON.stringify(customCnts));
-  renderCnt();closePop('pop-addcnt');
-}
-function delCnt(key){
-  if(!confirm('이 카운터를 삭제할까요?')) return;
-  customCnts=customCnts.filter(c=>c.key!==key);delete counters[key];
-  localStorage.setItem('v10_cst',JSON.stringify(customCnts));renderCnt();
+  customCnts.push({key,icon,lbl:name});lpCnts[key]=0;
+  localStorage.setItem('v11_cst',JSON.stringify(customCnts));
+  closePop('pop-addcnt');renderCntBars();
 }
 
-/* ── 목록 ── */
-function openList(){
-  let html='';
-  if(roads.length){
-    html+=`<div style="background:#dbeafe;border:1.5px solid #93c5fd;border-radius:var(--rs);padding:10px;margin-bottom:10px;"><div style="font-size:12px;font-weight:700;color:#1d4ed8;margin-bottom:6px;">🔄 조사 이어하기</div><div style="font-size:11px;color:var(--gray7);line-height:1.6;margin-bottom:8px;">기존 라인을 복사하고 카운터만 초기화하여 같은 구간을 새로 조사합니다.</div><button style="width:100%;padding:10px;background:#1d4ed8;color:#fff;border:none;border-radius:var(--rs);font-size:13px;font-weight:700;cursor:pointer;" onclick="continueS urvey()">📋 현재 조사 이어하기</button></div>`;
-    html+=`<div class="ls-ttl">라인 (${roads.length}) — 탭=편집 · 길게누르기=삭제</div>`;
-    roads.forEach(r=>{
-      const totalCars=(r.cars?.right||0)+(r.cars?.left||0);
-      const cfgR=LC[r.typeRight]||LC.white;
-      html+=`<div class="lcard">
-        <div class="lcolor" style="background:${cfgR.color};"></div>
-        <div class="linfo">
-          <div class="lname">${fmtLen(r.length)}${r.width?` · 폭${r.width}m`:'<span style="color:#d97706;font-size:11px;"> ⚠ 도로폭 미입력</span>'}${r.firetruck?' 🚒':''}</div>
-          <div class="ldetail">우:${LC[r.typeRight]?.label||'미입력'} / 좌:${LC[r.typeLeft]?.label||'미입력'} · ${totalCars}대 · ${r.startTime||''}</div>
-        </div>
-        <span class="ldel" onclick="confirmDelRoad(${r.id})">삭제</span>
-      </div>`;
-    });
-  }
-  document.getElementById('list-body').innerHTML=html||'<div class="empty">저장된 라인이 없습니다.</div>';
-  document.getElementById('list-panel').classList.add('open');
-}
-function closeList(){document.getElementById('list-panel').classList.remove('open');}
-
-function continueSurvey(){
-  confirm2('조사 이어하기','현재 라인을 복사하고 카운터를 초기화할까요?\n(라인 속성은 그대로 유지됩니다)','이어하기','#1d4ed8').then(ok=>{
-    if(!ok) return;
-    
-    // 카운터 초기화
-    Object.keys(counters).forEach(k=>counters[k]=0);
-    
-    // 카운터 포인트 마커 제거
-    cntPts.forEach(p=>map.removeLayer(p.mk));
-    cntPts = [];
-    
-    // 사진 마커 제거
-    photoMarkers.forEach(p=>map.removeLayer(p.mk));
-    photoMarkers = [];
-    
-    // 라인의 카운터 초기화
-    roads.forEach(r=>{
-      r.cars = {right:0, left:0};
-      r.large = {right:0, left:0};
-      r.camp = {right:0, left:0};
-      r.obstacles = {right:[], left:[]};
-      r.startTime = nowStr();
-      r.endTime = null;
-      refreshRoadOnMap(r);
-    });
-    
-    renderCnt();
-    saveData();
-    closeList();
-    setBanner('🔄 조사를 이어합니다 — 카운터가 초기화되었습니다');
+function removeCustomCnt(key){
+  confirm2('카운터 삭제','이 카운터를 삭제할까요?','삭제','#dc2626').then(ok=>{
+    if(!ok)return;
+    customCnts=customCnts.filter(c=>c.key!==key);delete lpCnts[key];
+    localStorage.setItem('v11_cst',JSON.stringify(customCnts));renderCntBars();
   });
 }
 
-function resetAll(){
-  confirm2('전체 초기화','모든 라인, 카운터, 사진을 삭제하고\n완전히 새로 시작할까요?\n\n※ 이 작업은 되돌릴 수 없습니다!','전체 삭제','#dc2626').then(ok=>{
-    if(!ok) return;
-    
-    // 지도에서 모든 레이어 제거
-    roads.forEach(r=>{
-      const l=mapLayers['road_'+r.id];
-      if(l){
-        if(l.centerLine) map.removeLayer(l.centerLine);
-        if(l.edgeR) map.removeLayer(l.edgeR);
-        if(l.edgeL) map.removeLayer(l.edgeL);
-        if(l.startMk) map.removeLayer(l.startMk);
-        if(l.endMk) map.removeLayer(l.endMk);
-      }
-    });
-    
-    cntPts.forEach(p=>map.removeLayer(p.mk));
-    photoMarkers.forEach(p=>map.removeLayer(p.mk));
-    
-    // 데이터 초기화
-    roads = [];
-    mapLayers = {};
-    counters = {};
-    cntPts = [];
-    photoMarkers = [];
-    activeRoadId = null;
-    calibOffset = null;
-    
-    // localStorage 완전 삭제
-    localStorage.removeItem('v10_roads');
-    localStorage.removeItem('v10_counters');
-    localStorage.removeItem('v10_cst');
-    
-    // UI 초기화
-    renderCnt();
-    document.getElementById('calib-info').textContent='GPS 보정 없음 — [위치 보정] 버튼을 탭하세요';
-    document.getElementById('bb-calib').classList.remove('done');
-    document.getElementById('bb-calib').textContent='📍 위치 보정';
-    
-    setBanner('🗑 전체 초기화 완료 — 새로운 조사를 시작하세요');
-    alert('모든 데이터가 삭제되었습니다.\n새로운 조사를 시작할 수 있습니다.');
-  });
-}
-
-/* ── 화면 캡처 ── */
-function captureMap(){
-  setBanner('📸 화면 캡처 중...');
-  
-  // html2canvas 없이 Leaflet 기본 기능으로 간단하게
-  // 방법: canvas로 변환 후 다운로드
-  try {
-    const mapElement = document.getElementById('map');
-    const mapSize = map.getSize();
-    
-    // 간단한 스크린샷: 지도 영역을 canvas로 변환
-    import('https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js').then(html2canvas=>{
-      html2canvas.default(mapElement, {
-        useCORS: true,
-        allowTaint: true,
-        scale: 2,  // 고화질
-        width: mapSize.x,
-        height: mapSize.y
-      }).then(canvas => {
-        canvas.toBlob(blob => {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `무양공원_현장조사_지도_${TODAY}.png`;
-          a.click();
-          URL.revokeObjectURL(url);
-          setBanner('📸 화면 캡처 완료');
-        });
-      });
-    }).catch(err=>{
-      console.error('캡처 실패:', err);
-      alert('화면 캡처 기능은 최신 브라우저에서만 지원됩니다.');
-    });
-  } catch(e) {
-    console.error(e);
-    alert('화면 캡처 중 오류가 발생했습니다.');
-  }
-}
-
-/* ── 대시보드 ── */
-function openDash(){renderDash();document.getElementById('dash-panel').classList.add('open');}
-function closeDash(){document.getElementById('dash-panel').classList.remove('open');}
-function renderDash(){
-  const totalCars=roads.reduce((s,r)=>s+(r.cars?.right||0)+(r.cars?.left||0),0);
-  const totalLarge=roads.reduce((s,r)=>s+(r.large?.right||0)+(r.large?.left||0),0);
-  const totalLen=roads.reduce((s,r)=>s+(r.length||0),0);
-  const ftRoads=roads.filter(r=>r.firetruck);
-  const schoolRoads=roads.filter(r=>r.typeRight==='yellow2'||r.typeLeft==='yellow2');
-  const schoolCars=schoolRoads.reduce((s,r)=>s+(r.cars?.right||0)+(r.cars?.left||0),0);
-  const accEl=document.getElementById('gps-badge').textContent;
-  const accNum=parseInt(accEl.match(/±(\d+)m/)?.[1]||'99');
-  const gpsOk=calibOffset&&accNum<=5;
-  const nambuFaces=210; // 남부대 주차면 수
-  const savedConst=Math.round(totalCars*7000/100)*100; // 만원 단위
-
-  document.getElementById('dash-body').innerHTML=`
-  <div class="dash-section">
-    <div class="dash-ttl">조사 메타데이터</div>
-    <div class="econ-row"><span class="econ-lbl">조사 일시</span><span class="econ-val">${TODAY}</span></div>
-    <div class="econ-row"><span class="econ-lbl">라인 수 · 총 거리</span><span class="econ-val">${roads.length}개 · ${fmtLen(totalLen)}</span></div>
-    <div class="econ-row"><span class="econ-lbl">GPS 신뢰도</span><span class="econ-val"><span class="gps-qual-badge ${gpsOk?'gps-ok':'gps-warn'}">${gpsOk?`✓ 정밀 (±${accNum}m)`:`⚠ ${calibOffset?'±'+accNum+'m':'미보정'}`}</span></span></div>
-  </div>
-
-  <div class="dash-section">
-    <div class="dash-ttl">주차 현황</div>
-    <div class="econ-row"><span class="econ-lbl">총 주차 차량</span><span class="econ-val">${totalCars}대</span></div>
-    <div class="econ-row"><span class="econ-lbl">대형차·캠핑카</span><span class="econ-val">${totalLarge}대</span></div>
-    ${schoolRoads.length?`<div class="econ-row"><span class="econ-lbl">스쿨존 내 차량</span><span class="econ-val">${schoolCars}대</span></div>`:''}
-    ${ftRoads.length?`<div style="background:#fef2f2;border:2px solid #fca5a5;border-radius:var(--rs);padding:10px;margin-top:8px;text-align:center;"><div style="font-size:28px;font-weight:800;color:#dc2626;">${ftRoads.length}</div><div style="font-size:12px;font-weight:700;color:#991b1b;margin-top:2px;">개 구간 소방차 통행 불가</div></div>`:'<div style="font-size:13px;color:var(--gray5);margin-top:4px;">소방차 통행 불가 구간 없음</div>'}
-  </div>
-
-  <div class="dash-section">
-    <div class="dash-ttl">💰 남부대 주차장 개방 효과 분석</div>
-    <div class="econ-row"><span class="econ-lbl">조사 불법주차 차량</span><span class="econ-val">${totalCars}대</span></div>
-    <div class="econ-row"><span class="econ-lbl">남부대 제공 가능 주차면</span><span class="econ-val">${nambuFaces}면</span></div>
-    <div class="econ-row"><span class="econ-lbl">수용 가능 여부</span><span class="econ-val">${nambuFaces>=totalCars?`✅ ${nambuFaces-totalCars}면 여유`:`⚠ ${totalCars-nambuFaces}대 초과`}</span></div>
-    <div class="econ-highlight">
-      <div class="lbl">공영주차장 건설 대비 절감액</div>
-      <div class="val">${totalCars}면 × 7,000만원<br>= ${(totalCars*0.7).toFixed(1)}억 원</div>
-    </div>
-    <div style="font-size:10px;color:var(--gray5);margin-top:6px;line-height:1.6;">※ 남부대 주차면 수(210면)는 2026년 공모사업 신청 기준. 실제 제공 가능 면수는 협의 결과에 따라 변동.</div>
-  </div>`;
-}
-
-/* ── 내보내기 ── */
-function openExport(){
-  const tc=roads.reduce((s,r)=>s+(r.cars?.right||0)+(r.cars?.left||0),0);
-  const tl=roads.reduce((s,r)=>s+(r.length||0),0);
-  const ft=roads.filter(r=>r.firetruck).length;
-  const accEl=document.getElementById('gps-badge').textContent;
-  const accNum=parseInt(accEl.match(/±(\d+)m/)?.[1]||'99');
-  document.getElementById('exp-summary').innerHTML=
-    `조사일: ${TODAY}<br>라인: ${roads.length}개 · 총 거리: ${fmtLen(tl)}<br>총 차량: ${tc}대${ft?` · 🚒 소방차 불가 ${ft}개`:''}<br>${calibOffset?`✓ GPS 보정 적용 (±${accNum}m)`:'⚠ GPS 보정 미적용'}`;
-  openPop('pop-export');
-}
-
-function buildData(){
-  return{
-    title:'무양공원 주변 주차난 현장조사',
-    location:'광주광역시 광산구 월계동',
-    surveyDate:TODAY,
-    gps:{calibrated:!!calibOffset,accuracyM:calibOffset?parseInt(document.getElementById('gps-badge').textContent.match(/±(\d+)m/)?.[1]||'?'):'미보정'},
-    summary:{roads:roads.length,totalCars:roads.reduce((s,r)=>s+(r.cars?.right||0)+(r.cars?.left||0),0),firetruckBlocked:roads.filter(r=>r.firetruck).length,totalLength:fmtLen(roads.reduce((s,r)=>s+(r.length||0),0))},
-    roads:roads.map(r=>({
-      length:fmtLen(r.length),width:r.width,bearing:`${r.bearing||0}°(${bearingToText(r.bearing||0)}향)`,
-      typeRight:LC[r.typeRight]?.label||r.typeRight,typeLeft:LC[r.typeLeft]?.label||r.typeLeft,
-      cars:r.cars,large:r.large,camp:r.camp,obstacles:r.obstacles,
-      widthRemain:r.widthRemain,firetruck:r.firetruck,crossable:r.crossable,
-      congestion:r.congestion,memo:r.memo,startTime:r.startTime,endTime:r.endTime,
-      points:r.points,
-    })),
-    counterPoints:cntPts.map(p=>{const ll=p.mk.getLatLng();const c=[...DC,...customCnts].find(c=>c.key===p.key);return{type:c?.lbl||p.key,lat:ll.lat.toFixed(6),lng:ll.lng.toFixed(6),time:p.time||''};})
-  };
-}
-
-function expCSV(){
-  // 라인 정보
-  const h1=['구분','거리','도로폭(m)','방위각','잔여폭(m)','소방차통행','교행가능','우측선유형','우측차량','우측대형','우측캠핑','우측적치물','좌측선유형','좌측차량','좌측대형','좌측캠핑','좌측적치물','혼잡도','시작시각','종료시각','메모'];
-  const r1=roads.map(r=>['라인',fmtLen(r.length),r.width||'',`${r.bearing||0}°(${bearingToText(r.bearing||0)}향)`,r.widthRemain||'',r.firetruck?'불가':'',r.crossable?'가능':'',LC[r.typeRight]?.label||r.typeRight||'',r.cars?.right||0,r.large?.right||0,r.camp?.right||0,(r.obstacles?.right||[]).join('|'),LC[r.typeLeft]?.label||r.typeLeft||'',r.cars?.left||0,r.large?.left||0,r.camp?.left||0,(r.obstacles?.left||[]).join('|'),r.congestion||'',r.startTime||'',r.endTime||'',r.memo||''].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(','));
-  
-  // 카운터 포인트 정보
-  const h2=['구분','차종/유형','위도','경도','방향','시각'];
-  const r2=cntPts.map(p=>{
-    const ll=p.mk.getLatLng();
-    const c=[...DC,...customCnts].find(c=>c.key===p.key);
-    const sideText=p.side==='left'?'좌측':p.side==='right'?'우측':'';
-    return['포인트',c?.lbl||p.key,ll.lat.toFixed(6),ll.lng.toFixed(6),sideText,p.time||''].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',');
-  });
-  
-  const csv=[
-    '■ 라인 정보',
-    h1.join(','),
-    ...r1,
-    '',
-    '■ 카운터 포인트',
-    h2.join(','),
-    ...r2
-  ].join('\n');
-  
-  dl('\uFEFF'+csv,`무양공원_현장조사_${TODAY}.csv`,'text/csv');
-  closePop('pop-export');
-}
-function expJSON(){dl(JSON.stringify(buildData(),null,2),`무양공원_현장조사_${TODAY}.json`,'application/json');closePop('pop-export');}
-function expClip(){navigator.clipboard.writeText(JSON.stringify(buildData(),null,2)).then(()=>{alert('복사됨!');closePop('pop-export');});}
-function dl(c,f,t){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:t}));a.download=f;a.click();}
-
-/* ── 저장/복원 ── */
-function saveData(){
-  localStorage.setItem('v10_roads',JSON.stringify(roads.map(r=>({
-    id:r.id,points:r.points,length:r.length,width:r.width,bearing:r.bearing,
-    typeRight:r.typeRight,typeLeft:r.typeLeft,
-    cars:r.cars,large:r.large,camp:r.camp,obstacles:r.obstacles,
-    widthRemain:r.widthRemain,firetruck:r.firetruck,crossable:r.crossable,
-    congestion:r.congestion,memo:r.memo,startTime:r.startTime,endTime:r.endTime,
-  }))));
-  // 카운터 값도 저장
-  localStorage.setItem('v10_counters',JSON.stringify(counters));
-}
-
-/* ── 유틸 ── */
-function calcBearing(a,b){
-  const lat1=a[0]*Math.PI/180,lat2=b[0]*Math.PI/180,dLng=(b[1]-a[1])*Math.PI/180;
-  const y=Math.sin(dLng)*Math.cos(lat2),x=Math.cos(lat1)*Math.sin(lat2)-Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLng);
-  return (Math.atan2(y,x)*180/Math.PI+360)%360;
-}
-function bearingToText(b){return['북','북동','동','남동','남','남서','서','북서'][Math.round(b/45)%8];}
-function haverDist(lat1,lng1,lat2,lng2){const R=6371000,dL=(lat2-lat1)*Math.PI/180,dG=(lng2-lng1)*Math.PI/180;const a=Math.sin(dL/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dG/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
-function fmtLen(m){return m>=1000?`${(m/1000).toFixed(2)}km`:`${Math.round(m)}m`;}
-function nowStr(){return new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});}
-function setBanner(t){document.getElementById('banner-text').textContent=t;}
-function openPop(id){document.getElementById(id).classList.add('open');}
-function closePop(id){document.getElementById(id).classList.remove('open');}
-let _cRes=null;
-function confirm2(title,msg,okLbl='확인',okCol='#dc2626'){
-  document.getElementById('c-title').textContent=title;
-  document.getElementById('c-msg').textContent=msg;
-  document.getElementById('c-ok').textContent=okLbl;
-  document.getElementById('c-ok').style.background=okCol;
-  document.getElementById('cdlg').classList.add('open');
-  return new Promise(r=>_cRes=r);
-}
-function cRes(v){document.getElementById('cdlg').classList.remove('open');if(_cRes){_cRes(v);_cRes=null;}}
-
-/* ── 사진 촬영 기능 ── */
-function takeFieldPhoto(){
-  const input = document.getElementById('camera-input');
-  input.onchange = function(e){
-    const file = e.target.files[0];
-    if(!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = function(evt){
-      pendingPhoto = {
-        data: evt.target.result,
-        time: nowStr(),
-        pos: currentPos ? [...currentPos] : null
-      };
-      openPop('pop-photo-side');
+/* 사진 */
+function takePhoto(){
+  const input=document.createElement('input');input.type='file';input.accept='image/*';input.capture='environment';
+  input.onchange=e=>{
+    const file=e.target.files[0];if(!file)return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      const acc=parseInt(document.getElementById('gps-badge').textContent.match(/±(\d+)m/)?.[1]||'99');
+      const ph={id:'ph_'+Date.now(),dataUrl:ev.target.result,lat:currentPos?currentPos[0]:35.2101,lng:currentPos?currentPos[1]:126.8404,time:nowStr(),calibrated:false,accuracy:acc};
+      lpPhotos.push(ph);renderPhotoList();
     };
     reader.readAsDataURL(file);
   };
   input.click();
 }
 
-function saveFieldPhoto(side){
-  if(!pendingPhoto) return;
-  
-  const pos = pendingPhoto.pos || [35.2101, 126.8404];
-  const mk = L.marker(pos, {
-    icon: L.divIcon({
-      html: `<div style="width:24px;height:24px;background:#3b82f6;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;"><span style="font-size:14px;">📷</span></div>`,
-      className: '',
-      iconAnchor: [12, 12]
-    })
-  }).addTo(map);
-  
-  mk.bindTooltip(`📷 현장사진 ${side==='left'?'◀ 좌측':'우측 ▶'} · ${pendingPhoto.time}`, {permanent:false, direction:'top'});
-  
-  const photoData = {
-    mk: mk,
-    side: side,
-    time: pendingPhoto.time,
-    data: pendingPhoto.data,
-    pos: pos
-  };
-  
-  mk.on('click', ()=>{
-    document.getElementById('photo-view-img').src = photoData.data;
-    document.getElementById('photo-view-info').textContent = 
-      `${photoData.side==='left'?'◀ 좌측':'우측 ▶'} · ${photoData.time} · ${photoData.pos[0].toFixed(6)}, ${photoData.pos[1].toFixed(6)}`;
-    openPop('pop-photo-view');
+function renderPhotoList(){
+  const el=document.getElementById('photo-list');el.innerHTML='';
+  lpPhotos.forEach(ph=>{
+    const isWarn=!ph.calibrated&&ph.accuracy>10;
+    const card=document.createElement('div');card.className='photo-card';
+    card.innerHTML=`
+      <div class="photo-card-top">
+        <div class="photo-thumb">${ph.dataUrl?`<img src="${ph.dataUrl}" alt="">`:'📷'}</div>
+        <div class="photo-info">
+          <div class="photo-name">${ph.time}</div>
+          <span class="photo-badge ${ph.calibrated?'badge-ok':'badge-gps'}">${ph.calibrated?'위치 보정됨':`GPS ±${ph.accuracy}m`}</span>
+          <div class="photo-coord">${ph.lat.toFixed(5)}, ${ph.lng.toFixed(5)}</div>
+        </div>
+        <button class="photo-del" onclick="deletePhoto('${ph.id}')">×</button>
+      </div>
+      <div class="photo-footer ${isWarn?'warn':ph.calibrated?'ok':''}">
+        <span class="photo-hint ${isWarn?'warn':ph.calibrated?'ok':''}">${ph.calibrated?'S펜으로 위치 직접 지정됨':isWarn?'마커 위치가 부정확할 수 있어요':'GPS 위치 자동 저장됨'}</span>
+        <button class="photo-calib-btn ${isWarn?'warn':'ok'}" onclick="startPhotoCalib('${ph.id}')">${ph.calibrated?'재보정':'S펜 위치 보정'}</button>
+      </div>`;
+    el.appendChild(card);
   });
-  
-  photoMarkers.push(photoData);
-  pendingPhoto = null;
-  closePop('pop-photo-side');
-  setBanner(`📷 현장 사진 저장됨 (${side==='left'?'좌측':'우측'})`);
 }
 
-function cancelFieldPhoto(){
-  pendingPhoto = null;
-  closePop('pop-photo-side');
+function deletePhoto(phId){lpPhotos=lpPhotos.filter(p=>p.id!==phId);renderPhotoList();}
+
+function startPhotoCalib(phId){
+  calibPhotoId=phId;closePop('pop-line');
+  document.getElementById('calib-banner').classList.add('show');
+  setSt('지도를 탭해 사진의 정확한 위치를 찍으세요','calib');
+  document.getElementById('calib-banner').onclick=cancelPhotoCalib;
 }
 
-// 칩 이벤트
-document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>c.classList.toggle('sel')));
+function applyPhotoCalib(latlng){
+  const ph=lpPhotos.find(p=>p.id===calibPhotoId);
+  if(ph){ph.lat=latlng.lat;ph.lng=latlng.lng;ph.calibrated=true;}
+  document.getElementById('calib-banner').classList.remove('show');
+  calibPhotoId=null;setSt('위치 보정 완료','ok');
+  if(editId)openLineProp(editId);
+}
 
-/* ── 복원 ── */
-(function(){
+function cancelPhotoCalib(){
+  document.getElementById('calib-banner').classList.remove('show');
+  calibPhotoId=null;setSt('보정 취소됨');
+  if(editId)openLineProp(editId);
+}
+
+/* 목록 */
+function openList(){
+  let html='';
+  if(!roads.length)html='<div class="empty">저장된 라인이 없습니다.</div>';
+  else roads.forEach(r=>{
+    const total=totalCars(r);
+    const density=r.length>0?(total/r.length*10).toFixed(1):'-';
+    html+=`<div class="lcard" onclick="closeList();openLineProp(${r.id})">
+      <div class="lnum">${r.num}</div>
+      <div class="linfo">
+        <div class="lname">${r.firetruck?'🚒 ':''}라인 ${r.num} · ${fmtLen(r.length)}</div>
+        <div class="ldetail">${LC[r.lineType]?.label||'선종류 미입력'} · ${total}대 · ${density}대/10m${r.widthRemain?' · 잔여'+r.widthRemain+'m':''}</div>
+      </div>
+      <span class="ldel" onclick="event.stopPropagation();confirmDelRoad(${r.id})">삭제</span>
+    </div>`;
+  });
+  document.getElementById('list-body').innerHTML=html;
+  document.getElementById('list-panel').classList.add('open');
+}
+function closeList(){document.getElementById('list-panel').classList.remove('open');}
+
+function confirmDelRoad(id){
+  const r=roads.find(r=>r.id===id);
+  confirm2('라인 삭제',`라인 ${r?.num}을 삭제할까요?`,'삭제','#dc2626').then(ok=>{
+    if(!ok)return;
+    removeRoadFromMap(id);roads=roads.filter(r=>r.id!==id);
+    roads.forEach((r,i)=>{r.num=i+1;refreshRoadLine(r);});
+    saveData();openList();
+  });
+}
+
+/* 분석 */
+function openAnalyze(){renderAnalyze();document.getElementById('analyze-panel').classList.add('open');}
+function closeAnalyze(){document.getElementById('analyze-panel').classList.remove('open');}
+
+function densityColor(ratio){
+  if(ratio>=.75)return{bg:'#fef2f2',border:'#fca5a5',txt:'#991b1b',dot:'#dc2626',label:'매우 높음'};
+  if(ratio>=.5) return{bg:'#fef3c7',border:'#fcd34d',txt:'#92400e',dot:'#d97706',label:'높음'};
+  if(ratio>=.25)return{bg:'#fefce8',border:'#fef08a',txt:'#713f12',dot:'#ca8a04',label:'보통'};
+  return             {bg:'#d1fae5',border:'#6ee7b7',txt:'#065f46',dot:'#059669',label:'낮음'};
+}
+
+function renderAnalyze(){
+  if(!roads.length){document.getElementById('analyze-body').innerHTML='<div class="empty">라인 데이터가 없습니다.</div>';return;}
+  const items=roads.map(r=>({road:r,total:totalCars(r),density:r.length>0?totalCars(r)/r.length*10:0}));
+  items.sort((a,b)=>b.density-a.density);
+  const maxD=items[0].density||1;
+  const totalAll=items.reduce((s,d)=>s+d.total,0);
+  const avgD=items.reduce((s,d)=>s+d.density,0)/items.length;
+
+  /* 지도 라인 색 업데이트 */
+  items.forEach(({road,density})=>{
+    const c=densityColor(density/maxD);
+    const l=mapLayers['road_'+road.id];
+    if(l)l.pl.setStyle({color:c.dot,weight:6,dashArray:null});
+  });
+
+  let html=`
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
+    <div style="background:var(--gray0);border-radius:var(--rs);padding:12px;text-align:center;"><div style="font-size:10px;color:var(--gray5);margin-bottom:4px;">총 라인</div><div style="font-size:22px;font-weight:800;">${roads.length}</div></div>
+    <div style="background:var(--gray0);border-radius:var(--rs);padding:12px;text-align:center;"><div style="font-size:10px;color:var(--gray5);margin-bottom:4px;">총 차량</div><div style="font-size:22px;font-weight:800;">${totalAll}대</div></div>
+    <div style="background:var(--gray0);border-radius:var(--rs);padding:12px;text-align:center;"><div style="font-size:10px;color:var(--gray5);margin-bottom:4px;">평균 밀도</div><div style="font-size:22px;font-weight:800;">${avgD.toFixed(1)}</div><div style="font-size:9px;color:var(--gray5);">대/10m</div></div>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+    ${[{l:'낮음',c:'#059669'},{l:'보통',c:'#ca8a04'},{l:'높음',c:'#d97706'},{l:'매우 높음',c:'#dc2626'}].map(x=>`<div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--gray7);"><div style="width:11px;height:11px;border-radius:50%;background:${x.c};"></div>${x.l}</div>`).join('')}
+  </div>
+  <div style="font-size:10px;color:var(--gray5);margin-bottom:10px;">지도의 라인 색이 밀도에 따라 업데이트됩니다</div>
+  <div style="font-size:11px;font-weight:700;color:var(--gray5);letter-spacing:.05em;margin-bottom:8px;">밀도 순위 (높은 순)</div>`;
+
+  items.forEach(({road,total,density})=>{
+    const c=densityColor(density/maxD);
+    html+=`<div class="density-card" style="background:${c.bg};border-color:${c.border};" onclick="closeAnalyze();openLineProp(${road.id})">
+      <div class="dc-num" style="background:${c.dot};">${road.num}</div>
+      <div class="dc-info">
+        <div class="dc-name" style="color:${c.txt};">라인 ${road.num} · ${fmtLen(road.length)}${road.firetruck?' 🚒':''}</div>
+        <div class="dc-detail" style="color:${c.txt};opacity:.8;">${LC[road.lineType]?.label||'선종류 미입력'}${road.widthRemain?' · 잔여'+road.widthRemain+'m':''}</div>
+      </div>
+      <div class="dc-density" style="color:${c.dot};">${density.toFixed(1)}<span style="font-size:10px;font-weight:500;">대/10m</span></div>
+    </div>`;
+  });
+
+  const ftRoads=roads.filter(r=>r.firetruck);
+  if(ftRoads.length)html+=`<div style="background:#fef2f2;border:2px solid #fca5a5;border-radius:var(--r);padding:14px;margin-top:12px;text-align:center;"><div style="font-size:32px;font-weight:800;color:#dc2626;">${ftRoads.length}</div><div style="font-size:12px;font-weight:700;color:#991b1b;">개 구간 소방차 통행 불가</div><div style="font-size:11px;color:#b91c1c;margin-top:4px;">라인 ${ftRoads.map(r=>r.num).join(', ')}</div></div>`;
+  document.getElementById('analyze-body').innerHTML=html;
+}
+
+/* 내보내기 */
+function openExport(){
+  const total=roads.reduce((s,r)=>s+totalCars(r),0);
+  const tLen=roads.reduce((s,r)=>s+r.length,0);
+  document.getElementById('exp-summary').innerHTML=`조사일: ${TODAY}<br>라인: ${roads.length}개 · 총 거리: ${fmtLen(tLen)}<br>총 차량: ${total}대<br>소방차 불가: ${roads.filter(r=>r.firetruck).length}개 구간`;
+  openPop('pop-export');
+}
+
+function buildData(){
+  return{title:'무양공원 주차밀도 현장조사',surveyDate:TODAY,summary:{roads:roads.length,totalCars:roads.reduce((s,r)=>s+totalCars(r),0),totalLength:fmtLen(roads.reduce((s,r)=>s+r.length,0)),firetruckBlocked:roads.filter(r=>r.firetruck).length},roads:roads.map(r=>({num:r.num,length:fmtLen(r.length),lineType:LC[r.lineType]?.label||r.lineType||'미입력',widthRemain:r.widthRemain,firetruck:r.firetruck,cnts:r.cnts,totalCars:totalCars(r),density_per10m:r.length>0?+(totalCars(r)/r.length*10).toFixed(2):0,memo:r.memo,time:r.time,photos:(r.photos||[]).map(p=>({time:p.time,lat:p.lat,lng:p.lng,calibrated:p.calibrated}))}))};
+}
+
+function expCSV(){
+  const allKeys=[...BASE_CNTS,...customCnts].map(c=>c.key);
+  const header=['라인번호','거리(m)','선종류','잔여폭(m)','소방차통행',...allKeys.map(k=>[...BASE_CNTS,...customCnts].find(c=>c.key===k)?.lbl||k),'총차량','밀도(대/10m)','메모','시각'];
+  const rows=roads.map(r=>[r.num,r.length,LC[r.lineType]?.label||r.lineType||'',r.widthRemain||'',r.firetruck?'불가':'',...allKeys.map(k=>r.cnts?.[k]||0),totalCars(r),r.length>0?(totalCars(r)/r.length*10).toFixed(2):0,r.memo||'',r.time||''].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(','));
+  dl('\uFEFF'+[header.join(','),...rows].join('\n'),`무양공원_${TODAY}.csv`,'text/csv');
+  closePop('pop-export');
+}
+function expJSON(){dl(JSON.stringify(buildData(),null,2),`무양공원_${TODAY}.json`,'application/json');closePop('pop-export');}
+function expClip(){navigator.clipboard.writeText(JSON.stringify(buildData(),null,2)).then(()=>{alert('복사됨!');closePop('pop-export');});}
+function dl(c,f,t){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:t}));a.download=f;a.click();}
+
+/* 유틸 */
+function totalCars(road){if(!road.cnts)return 0;return Object.values(road.cnts).reduce((s,v)=>s+(parseInt(v)||0),0);}
+function calcBearing(s,e){const la1=s[0]*Math.PI/180,la2=e[0]*Math.PI/180,dL=(e[1]-s[1])*Math.PI/180,y=Math.sin(dL)*Math.cos(la2),x=Math.cos(la1)*Math.sin(la2)-Math.sin(la1)*Math.cos(la2)*Math.cos(dL);return(Math.atan2(y,x)*180/Math.PI+360)%360;}
+function bearingToText(b){return['북','북동','동','남동','남','남서','서','북서'][Math.round(b/45)%8];}
+function haverDist(a,b,c,d){const R=6371000,dL=(c-a)*Math.PI/180,dG=(d-b)*Math.PI/180,x=Math.sin(dL/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dG/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
+function fmtLen(m){return m>=1000?`${(m/1000).toFixed(2)}km`:`${m}m`;}
+function nowStr(){return new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'});}
+function setSt(txt,cls=''){document.getElementById('stxt').textContent=txt;document.getElementById('sdot').className=cls;}
+function openPop(id){document.getElementById(id).classList.add('open');}
+function closePop(id){document.getElementById(id).classList.remove('open');}
+
+let _cRes=null;
+function confirm2(title,msg,okLbl='확인',okCol='#dc2626'){
+  document.getElementById('c-title').textContent=title;document.getElementById('c-msg').textContent=msg;
+  document.getElementById('c-ok').textContent=okLbl;document.getElementById('c-ok').style.background=okCol;
+  document.getElementById('cdlg').classList.add('open');return new Promise(r=>{_cRes=r;});
+}
+function cRes(v){document.getElementById('cdlg').classList.remove('open');if(_cRes){_cRes(v);_cRes=null;}}
+
+/* 저장/복원 */
+function saveData(){
+  const toSave=roads.map(r=>({...r,photos:(r.photos||[]).map(p=>({...p,dataUrl:undefined}))}));
+  localStorage.setItem('v11_roads',JSON.stringify(toSave));
+  const photoData={};roads.forEach(r=>{(r.photos||[]).forEach(p=>{if(p.dataUrl)photoData[p.id]=p.dataUrl;});});
+  try{localStorage.setItem('v11_photos',JSON.stringify(photoData));}catch(e){}
+}
+
+(function restore(){
+  const photoData=JSON.parse(localStorage.getItem('v11_photos')||'{}');
+  roads.forEach((r,i)=>{r.num=i+1;r.photos=(r.photos||[]).map(p=>({...p,dataUrl:photoData[p.id]||null}));});
   roads.forEach(r=>addRoadToMap(r));
-  // 저장된 카운터 복원
-  const savedCounters = localStorage.getItem('v10_counters');
-  if(savedCounters){
-    try{
-      const restored = JSON.parse(savedCounters);
-      Object.assign(counters, restored);
-    }catch(e){console.error('카운터 복원 실패:',e);}
-  }
-  initCnt();
-  // 도로폭이 입력된 라인 중 마지막 라인을 활성 라인으로
-  const withWidth=roads.filter(r=>r.width);
-  if(withWidth.length) activeRoadId=withWidth[withWidth.length-1].id;
+  roads.forEach(r=>refreshRoadLine(r));
 })();
 </script>
 </body>
