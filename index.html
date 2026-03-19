@@ -140,6 +140,7 @@ html,body{height:100%;font-family:-apple-system,'Apple SD Gothic Neo',sans-serif
   <div id="status"><div id="sdot"></div><span id="stxt">✏️ 라인 버튼으로 도로 구간을 그으세요</span></div>
   <div id="toolbar">
     <button class="tb tb-draw" id="tb-draw" onclick="toggleDraw()">✏️ 라인</button>
+    <button class="tb" id="tb-done" onclick="finishDraw()" style="display:none;background:#ede9fe;color:#7c3aed;border:2px solid #c4b5fd;font-weight:700;">✅ 완료</button>
     <button class="tb tb-calib" id="tb-calib" onclick="doCalib()">📍 보정</button>
     <button class="tb tb-list" onclick="openList()">📋 목록</button>
     <button class="tb tb-analyze" onclick="openAnalyze()">📊 분석</button>
@@ -313,29 +314,39 @@ function doCalib(){
 /* 라인 그리기 */
 function toggleDraw(){
   if(drawMode){cancelDraw();return;}
-  drawMode=true;drawPts=[];drawMks=[];drawLine=null;drawDblTmr=null;
+  drawMode=true;drawPts=[];drawMks=[];drawLine=null;
   document.getElementById('tb-draw').classList.add('on');
-  document.getElementById('tb-draw').textContent='✏️ 그리는 중';
+  document.getElementById('tb-draw').textContent='✏️ 취소';
+  document.getElementById('tb-done').style.display='';
   document.getElementById('sdot').className='draw';
-  setSt('지도를 탭해 점을 찍으세요 — 더블탭으로 완료');
+  setSt('지도를 탭해 점을 찍고 — ✅ 완료 버튼으로 라인 확정');
 }
 
 function cancelDraw(){
   drawMode=false;drawPts=[];
+  if(drawDblTmr!==null){clearTimeout(drawDblTmr);drawDblTmr=null;}
   drawMks.forEach(m=>map.removeLayer(m));drawMks=[];
   if(drawLine){map.removeLayer(drawLine);drawLine=null;}
   document.getElementById('tb-draw').classList.remove('on');
   document.getElementById('tb-draw').textContent='✏️ 라인';
+  document.getElementById('tb-done').style.display='none';
   document.getElementById('sdot').className='';
   setSt('✏️ 라인 버튼으로 도로 구간을 그으세요');
 }
 
-/* 지도 클릭 */
+/* 단일탭 — 점 추가 */
 map.on('click',function(e){
   if(calibPhotoId!==null){applyPhotoCalib(e.latlng);return;}
   if(!drawMode)return;
-  if(drawDblTmr!==null){clearTimeout(drawDblTmr);drawDblTmr=null;finishDraw();return;}
+  if(drawDblTmr!==null)return;
   drawDblTmr=setTimeout(()=>{drawDblTmr=null;addDrawPoint(e.latlng);},280);
+});
+
+/* 더블탭 — 라인 완료 */
+map.on('dblclick',function(e){
+  if(!drawMode)return;
+  if(drawDblTmr!==null){clearTimeout(drawDblTmr);drawDblTmr=null;}
+  finishDraw();
 });
 
 function addDrawPoint(latlng){
@@ -353,6 +364,7 @@ function finishDraw(){
   drawMode=false;
   document.getElementById('tb-draw').classList.remove('on');
   document.getElementById('tb-draw').textContent='✏️ 라인';
+  document.getElementById('tb-done').style.display='none';
   document.getElementById('sdot').className='';
   let totalLen=0;
   for(let i=1;i<drawPts.length;i++)totalLen+=haverDist(drawPts[i-1][0],drawPts[i-1][1],drawPts[i][0],drawPts[i][1]);
